@@ -1,351 +1,311 @@
-import uuid
-from asyncpg.exceptions import PostgresError
-import psycopg2
 import json
+import uuid
+import asyncpg
+import os
 
 
 class Database:
-    def __init__(self, db_name='tinderscore'):
+    def __init__(self):
+        self.conn = None
+        self.db_name = os.getenv('DB_NAME')
+        self.db_user = os.getenv('DB_USER')
+        self.db_password = os.getenv('DB_PASSWORD')
+        self.db_host = os.getenv('DB_HOST')
+        self.db_port = os.getenv('DB_PORT')
+
+        if not all([self.db_name, self.db_user, self.db_password, self.db_host, self.db_port]):
+            raise EnvironmentError("One or more required environment variables are missing")
+
+    async def connect(self):
         try:
-            user = 'postgres'
-            password = 'SCH20119'
-            host = 'localhost'
-            port = '5432'
-            self.conn = psycopg2.connect(
-                dbname=db_name,
-                user=user,
-                password=password,
-                host=host,
-                port=port
+            self.conn = await asyncpg.connect(
+                database=self.db_name,
+                user=self.db_user,
+                password=self.db_password,
+                host=self.db_host,
+                port=self.db_port
             )
-            self.cur = self.conn.cursor()
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             raise e
 
+    async def close(self):
+        await self.conn.close()
+
     # PROFILES TABLE
-    def profile_show(self, id):
+    async def profile_show(self, id):
         try:
-            self.cur.execute("""
+            profile = await self.conn.fetchrow("""
                 SELECT * FROM profiles
-                WHERE id = %s
-            """, (id,))
-            profile = self.cur.fetchone()
+                WHERE id = $1
+            """, id)
             return profile
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error fetching profile:", e)
-            return "Error DB fetching profile:" + str(e)
+            return f"Error DB fetching profile: {e}"
 
-    def profile_make(self, profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,
-                     description):
-        user_uuid = uuid.uuid4()  # Генерация случайного UUID
-
+    async def profile_make(self, profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,
+                           description):
+        user_uuid = uuid.uuid4()
         try:
-            self.cur.execute("""
-                INSERT INTO profiles (profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,description,points, user_uuid) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id
-            """, (profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info, description, 0,
-                  str(user_uuid)))
-
-            self.conn.commit()
-            inserted_id = self.cur.fetchone()[0]
+            inserted_id = await self.conn.fetchval("""
+                INSERT INTO profiles (profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,description,points, user_uuid)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id
+            """, profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info, description, 0,
+                  user_uuid)
             return inserted_id, user_uuid
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error creating profile:", e)
-            return "Error DB creating profile:" + str(e)
+            return f"Error DB creating profile: {e}"
 
-    def read_num_points(self, id):
+    async def read_num_points(self, id):
         try:
-            self.cur.execute("""
-                            SELECT points FROM profiles
-                            WHERE id = %s
-                        """, (id,))
-            self.conn.commit()
-            points = self.cur.fetchone()
-            return points[0]
-        except psycopg2.Error as e:
+            points = await self.conn.fetchval("""
+                SELECT points FROM profiles
+                WHERE id = $1
+            """, id)
+            return points
+        except asyncpg.PostgresError as e:
             print("Error points profile:", e)
-            return "Error DB points profile:" + str(e)
+            return f"Error DB points profile: {e}"
 
-    def userIdfromWallet(self, wallet):
+    async def userIdfromWallet(self, wallet):
         try:
-            self.cur.execute("""
-                            SELECT id FROM profiles
-                            WHERE address = %s
-                        """, (wallet,))
-            self.conn.commit()
-            points = self.cur.fetchone()
-            if points:
-                return points[0]
+            result = await self.conn.fetchrow("""
+                        SELECT id FROM profiles WHERE address = $1
+                    """, wallet)
+            if result:
+                return result['id']
             return None
-        except psycopg2.Error as e:
-            print("Error userIdfromWallet profile:", e)
-            return "Error DB userIdfromWallet profile:" + str(e)
+        except asyncpg.PostgresError as e:
+            print("Error fetching user ID from wallet:", e)
+            return f"Error DB fetching user ID from wallet: {e}"
 
-    def update_num_points(self, id, points):
+    async def update_num_points(self, id, points):
         try:
-            self.cur.execute("""
-                            UPDATE profiles
-                            SET points = %s
-                            WHERE id = %s
-                        """, (points, id))
-            self.conn.commit()
-            return 200
-        except psycopg2.Error as e:
-            print("Error updating profile:", e)
-            return "Error DB updating profile points:" + str(e)
-
-    def profile_change(self, id, profileNickname, address, socials, tagsSphere, work, nfts, description):
-        try:
-            socials = json.dumps(socials)
-            work = json.dumps(work)
-            tagsSphere = json.dumps(tagsSphere)
-            self.cur.execute("""
+            await self.conn.execute("""
                 UPDATE profiles
-                SET profileNickname = %s, 
-                    address = %s,
-                    socials = %s, 
-                    tagsSphere = %s,
-                    work = %s,
-                    nfts = %s,
-                    description=%s
-                WHERE id = %s
-            """, (profileNickname, address, socials, tagsSphere, work, nfts, description, id))
-            self.conn.commit()
+                SET points = $1
+                WHERE id = $2
+            """, points, id)
             return 200
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error updating profile:", e)
-            return "Error DB updating profile:" + str(e)
+            return f"Error DB updating profile points: {e}"
 
-    def check_username_unique(self, username):
+    async def profile_change(self, id, profileNickname, address, socials, tagsSphere, work, nfts, description):
         try:
-            self.cur.execute("""
+            socials_json = json.dumps(socials)
+            work_json = json.dumps(work)
+            tagsSphere_json = json.dumps(tagsSphere)
+            await self.conn.execute("""
+                UPDATE profiles
+                SET profileNickname = $1, 
+                    address = $2,
+                    socials = $3, 
+                    tagsSphere = $4,
+                    work = $5,
+                    nfts = $6,
+                    description = $7
+                WHERE id = $8
+            """, profileNickname, address, socials_json, tagsSphere_json, work_json, nfts, description, id)
+            return 200
+        except asyncpg.PostgresError as e:
+            print("Error updating profile:", e)
+            return f"Error DB updating profile: {e}"
+
+    async def check_username_unique(self, username):
+        try:
+            exists = await self.conn.fetchval("""
                 SELECT EXISTS (
                     SELECT 1
                     FROM profiles
-                    WHERE profileNickname = %s
+                    WHERE profileNickname = $1
                 )
-            """, (username,))
-            # exists будет True, если пользователь с таким username найден
-            exists = self.cur.fetchone()[0]
+            """, username)
             return not exists  # Вернуть True, если username уникален (не найден)
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error checking username uniqueness:", e)
-            return "Error DB checking username uniqueness:" + str(e)
+            return f"Error DB checking username uniqueness: {e}"
 
-    def check_wallet_unique(self, address):
+    async def check_wallet_unique(self, address):
         try:
-            self.cur.execute("""
+            exists = await self.conn.fetchval("""
                 SELECT EXISTS (
                     SELECT 1
                     FROM profiles
-                    WHERE address = %s
+                    WHERE address = $1
                 )
-            """, (address,))
-            # exists будет True, если пользователь с таким username найден
-            exists = self.cur.fetchone()[0]
+            """, address)
             return not exists  # Вернуть True, если address уникален (не найден)
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error checking address uniqueness:", e)
-            return "Error DB checking address uniqueness:" + str(e)
+            return f"Error DB checking address uniqueness: {e}"
 
-    def ban_status_update(self, id, new_ban_status):
+    async def ban_status_update(self, id, new_ban_status):
         try:
             if not isinstance(new_ban_status, bool):
                 raise ValueError("Ban status must be boolean (True or False)")
 
-            self.cur.execute("""
+            await self.conn.execute("""
                 UPDATE profiles
-                SET banStatus = %s
-                WHERE id = %s
-            """, (new_ban_status, id))
-            self.conn.commit()
+                SET banStatus = $1
+                WHERE id = $2
+            """, new_ban_status, id)
             return 200
-        except (psycopg2.Error, ValueError) as e:
+        except (asyncpg.PostgresError, ValueError) as e:
             print("Error updating ban status:", e)
-            return "Error DB updating ban status:" + str(e)
+            return f"Error DB updating ban status: {e}"
 
-    def mute_status_update(self, id, new_mute_status):
+    async def mute_status_update(self, id, new_mute_status):
         try:
             if not isinstance(new_mute_status, bool):
                 raise ValueError("Mute status must be boolean (True or False)")
 
-            self.cur.execute("""
+            await self.conn.execute("""
                 UPDATE profiles
-                SET banStatus = %s
-                WHERE id = %s
-            """, (new_mute_status, id))
-            self.conn.commit()
+                SET muteStatus = $1
+                WHERE id = $2
+            """, new_mute_status, id)
             return 200
-        except (psycopg2.Error, ValueError) as e:
+        except (asyncpg.PostgresError, ValueError) as e:
             print("Error updating mute status:", e)
-            return "Error DB updating ban status:" + str(e)
+            return f"Error DB updating mute status: {e}"
 
-    def get_all_ids(self):
+    async def get_all_ids(self):
         try:
-            self.cur.execute("""
-                            SELECT id FROM profiles
-                        """, )
-            self.conn.commit()
-            ids = self.cur.fetchall()
+            ids = await self.conn.fetch("""
+                SELECT id FROM profiles
+            """)
             id_list = [id[0] for id in ids]
             return id_list
-        except psycopg2.Error as e:
-            print("Error updating profile:", e)
-            return "Error DB ids ALL profile:" + str(e)
+        except asyncpg.PostgresError as e:
+            print("Error fetching profile IDs:", e)
+            return f"Error DB fetching profile IDs: {e}"
 
     # NFTS TABLE
-    def nfts_make(self, userID, nftJSON):
+    async def nfts_make(self, userID, nftJSON):
         try:
-            self.cur.execute("""
-                INSERT INTO nfts (userID, nftsJSON) VALUES (%s,%s) RETURNING id
-            """, (userID, nftJSON))
-
-            self.conn.commit()
-            inserted_id = self.cur.fetchone()[0]
+            inserted_id = await self.conn.fetchval("""
+                INSERT INTO nfts (userID, nftsJSON) VALUES ($1, $2) RETURNING id
+            """, userID, nftJSON)
             return inserted_id
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error creating NFT:", e)
-            return "Error DB creating NFT:" + str(e)
+            return f"Error DB creating NFT: {e}"
 
-    def nfts_change_user_id(self, id, userID):
+    async def nfts_change_user_id(self, id, userID):
         try:
-            self.cur.execute("""
+            await self.conn.execute("""
                 UPDATE nfts
-                SET userID = %s
-                WHERE id = %s
-            """, (userID, id))
-            self.conn.commit()
+                SET userID = $1
+                WHERE id = $2
+            """, userID, id)
             return 200
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error updating NFT user ID:", e)
-            return "Error DB updating NFT user ID:" + str(e)
+            return f"Error DB updating NFT user ID: {e}"
 
-    def nfts_get(self, id):
+    async def nfts_get(self, id):
         try:
-            self.cur.execute("""
+            nfts = await self.conn.fetchrow("""
                 SELECT * FROM nfts
-                WHERE id = %s
-            """, (id,))
-            nfts = self.cur.fetchone()
+                WHERE id = $1
+            """, id)
             return nfts
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error fetching NFT:", e)
-            return "Error DB fetching NFT:" + str(e)
+            return f"Error DB fetching NFT: {e}"
 
-    def nfts_change(self, userID, nftJSON):
+    async def nfts_change(self, userID, nftJSON):
         try:
-            self.cur.execute("""
+            result = await self.conn.fetchrow("""
                 UPDATE nfts
-                SET nftsJSON = %s
-                WHERE userid = %s
-                 RETURNING id
-            """, (json.dumps(nftJSON), userID))
-            self.conn.commit()
-            inserted_id = self.cur.fetchone()[0]
-            return inserted_id
-        except psycopg2.Error as e:
+                SET nftsJSON = $1
+                WHERE userid = $2
+                RETURNING id
+            """, json.dumps(nftJSON), userID)
+            return result['id']
+        except asyncpg.PostgresError as e:
             print("Error DB updating NFT:", e)
-            return "Error DB updating NFT:" + str(e)
+            return f"Error DB updating NFT: {e}"
 
     # recomendSys TABLE
-    def recomendSys_make(self, userID, score, achievements, madedata, likeJSON, dislikeJSON, matchJSON):
+    async def recomendSys_make(self, userID, score, achievements, madedata, likeJSON, dislikeJSON, matchJSON):
         try:
-            self.cur.execute("""
-                INSERT INTO recomendSys (userID, score, achievements, madedata, likeJSON, dislikeJSON,matchjson) VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id
-            """, (userID, score, achievements, madedata, likeJSON, dislikeJSON, matchJSON))
-
-            self.conn.commit()
-            inserted_id = self.cur.fetchone()[0]
+            inserted_id = await self.conn.fetchval("""
+                INSERT INTO recomendSys (userID, score, achievements, madedata, likeJSON, dislikeJSON, matchjson)
+                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id
+            """, userID, score, achievements, madedata, likeJSON, dislikeJSON, matchJSON)
             return inserted_id
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error creating recommendation system entry:", e)
-            return "Error DB creating recommendation system entry:" + str(e)
+            return f"Error DB creating recommendation system entry: {e}"
 
-    def score_api_add(self, userID, score, achievements, madedata):
+    async def score_api_add(self, userID, score, achievements, madedata):
         try:
-            self.cur.execute("""
+            await self.conn.execute("""
                 UPDATE recomendSys
-                SET score = %s, 
-                    achievements = %s,
-                    madedata = %s
-                WHERE id = %s
-            """, (score, achievements, madedata, userID))
-            self.conn.commit()
+                SET score = $1,
+                    achievements = $2,
+                    madedata = $3
+                WHERE id = $4
+            """, score, achievements, madedata, userID)
             return 200
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error updating score API:", e)
-            return "Error DB updating score API:" + str(e)
+            return f"Error DB updating score API: {e}"
 
-    def recomendSys_change_score_data(self, userID, score, achievements, madedata):
+    async def recomendSys_change_user_id(self, id, userID):
         try:
-            self.cur.execute("""
+            await self.conn.execute("""
                 UPDATE recomendSys
-                SET score = %s,
-                    achievements = %s,
-                    madedata = %s   
-                WHERE userid = %s
-            """, (score, achievements, madedata, userID))
-            self.conn.commit()
+                SET userID = $1
+                WHERE id = $2
+            """, userID, id)
             return 200
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error updating recommendation system entry's user ID:", e)
-            return "Error DB updating recommendation system entry's user ID:" + str(e)
+            return f"Error DB updating recommendation system entry's user ID: {e}"
 
-    def recomendSys_change_user_id(self, id, userID, ):
+    async def reaction_data_add(self, userID, likeJSON, dislikeJSON):
         try:
-            self.cur.execute("""
+            await self.conn.execute("""
                 UPDATE recomendSys
-                SET userID = %s
-                WHERE id = %s
-            """, (userID, id))
-            self.conn.commit()
+                SET likeJSON = $1,
+                    dislikeJSON = $2
+                WHERE userid = $3
+            """, likeJSON, dislikeJSON, userID)
             return 200
-        except psycopg2.Error as e:
-            print("Error updating recommendation system entry's user ID:", e)
-            return "Error DB full_updating recommendation system entry's user ID:" + str(e)
-
-    def reaction_data_add(self, userID, likeJSON, dislikeJSON):
-        try:
-            self.cur.execute("""
-                UPDATE recomendSys
-                SET likeJSON = %s, 
-                    dislikeJSON = %s
-                WHERE userid = %s
-            """, (likeJSON, dislikeJSON, userID))
-            self.conn.commit()
-            return 200
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error adding reaction data:", e)
-            return "Error DB adding reaction data:" + str(e)
+            return f"Error DB adding reaction data: {e}"
 
-    def match_data_add(self, userID, matchJSON):
+    async def match_data_add(self, userID, matchJSON):
         try:
-            self.cur.execute("""
+            await self.conn.execute("""
                 UPDATE recomendSys
-                SET matchjson = %s
-                WHERE userid = %s
-            """, (matchJSON, userID))
-            self.conn.commit()
+                SET matchjson = $1
+                WHERE userid = $2
+            """, matchJSON, userID)
             return 200
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error adding match data:", e)
-            return "Error DB adding match data:" + str(e)
+            return f"Error DB adding match data: {e}"
 
-    def recomendSys_data_get(self, id):
+    async def recomendSys_data_get(self, id):
         try:
-            self.cur.execute("""
+            recomendSys_data = await self.conn.fetchrow("""
                 SELECT * FROM recomendSys
-                WHERE userid = %s
-            """, (id,))
-            recomendSys_data = self.cur.fetchone()
+                WHERE userid = $1
+            """, id)
             return recomendSys_data
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error fetching recommendation system data:", e)
-            return "Error DB fetching recommendation system data:" + str(e)
+            return f"Error DB fetching recommendation system data: {e}"
 
-    def recomendSys_data_get_all(self):
+    async def recomendSys_data_get_all(self):
         try:
-            self.cur.execute("SELECT * FROM recomendSys")
-            recomendSys_data_all = self.cur.fetchall()
+            recomendSys_data_all = await self.conn.fetch("SELECT * FROM recomendSys")
 
             # Создаем список словарей на основе полученных данных
             recomendSys_data_list = [
@@ -362,110 +322,56 @@ class Database:
                 for data in recomendSys_data_all
             ]
             return recomendSys_data_list
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             print("Error fetching recommendation system data:", e)
-            return "Error DB fetching recommendation system data:" + str(e)
+            return f"Error DB fetching recommendation system data: {e}"
 
-    # messages TABLE
-    def messages_make(self, fromUser, toUser, contentID, createdAt, updatedAt):
+    async def get_user_uuid_by_id(self, user_id):
         try:
-            self.cur.execute("""
-                INSERT INTO messages (fromUser, toUser, contentID, createdAt, updatedAt) VALUES (%s,%s,%s,%s,%s)""",
-                             (fromUser, toUser, contentID, createdAt, updatedAt))
-            self.conn.commit()
-            return 200
-        except psycopg2.Error as e:
-            print("Error creating message:", e)
-            return "Error DB creating message:" + str(e)
-
-    def messages_data_get(self, id):
-        try:
-            self.cur.execute("""
-                SELECT * FROM messages
-                WHERE id = %s
-            """, (id,))
-            messages_data = self.cur.fetchone()
-            return messages_data
-        except psycopg2.Error as e:
-            print("Error fetching message data:", e)
-            return "Error DB fetching message data:" + str(e)
-
-    # contents TABLE
-    def contents_make(self, contentUser):
-        try:
-            self.cur.execute("""
-                INSERT INTO contents (content) VALUES (%s)
-            """, (contentUser,))
-
-            self.conn.commit()
-            return 200
-        except psycopg2.Error as e:
-            print("Error creating content:", e)
-            return "Error DB creating content:" + str(e)
-
-    def contents_data_get(self, id):
-        try:
-            self.cur.execute("""
-                SELECT * FROM contents
-                WHERE id = %s
-            """, (id,))
-            contents_data = self.cur.fetchone()
-            return contents_data
-        except psycopg2.Error as e:
-            print("Error fetching content data:", e)
-            return "Error DB fetching content data:" + str(e)
-
-    def get_user_uuid_by_id(self, user_id):
-        try:
-            query = """
-                SELECT user_uuid FROM profiles WHERE id = %s
-            """
-            self.cur.execute(query, (user_id,))
-            user_uuid = self.cur.fetchone()
-            return user_uuid[0] if user_uuid else None
-        except psycopg2.Error as e:
+            user_uuid = await self.conn.fetchval("""
+                SELECT user_uuid FROM profiles WHERE id = $1
+            """, user_id)
+            return user_uuid
+        except asyncpg.PostgresError as e:
             print("Error retrieving user UUID:", e)
             return f"Error retrieving user UUID: {e}"
 
-    def get_user_uuid_by_wallet(self, wallet):
+    async def get_user_uuid_by_wallet(self, wallet):
         try:
-            query = """
-                SELECT user_uuid FROM profiles WHERE address = %s
-            """
-            self.cur.execute(query, (wallet,))
-            user_uuid = self.cur.fetchone()
-            return user_uuid[0] if user_uuid else None
-        except psycopg2.Error as e:
+            user_uuid = await self.conn.fetchval("""
+                SELECT user_uuid FROM profiles WHERE address = $1
+            """, wallet)
+            return user_uuid if user_uuid is not None else None
+        except asyncpg.PostgresError as e:
             print("Error wallet user UUID:", e)
             return f"Error wallet user UUID: {e}"
 
 
 class DatabaseWL:
     def __init__(self, db_name='whitelist'):
+        self.db_name = db_name
+
+    async def connect(self):
         try:
-            user = 'postgres'
-            password = 'SCH20119'
-            host = 'localhost'
-            port = '5432'
-            self.conn = psycopg2.connect(
-                dbname=db_name,
-                user=user,
-                password=password,
-                host=host,
-                port=port
+            self.conn = await asyncpg.connect(
+                dbname=self.db_name,
+                user='postgres',
+                password='SCH20119',
+                host='localhost',
+                port='5432'
             )
-            self.cur = self.conn.cursor()
-        except psycopg2.Error as e:
+        except asyncpg.PostgresError as e:
             raise e
 
-    def wladd(self, wl):
-        try:
-            self.cur.execute("""
-                INSERT INTO wl (email) VALUES (%s)
-            """, (wl,))
+    async def close(self):
+        await self.conn.close()
 
-            self.conn.commit()
+    async def wladd(self, wl):
+        try:
+            await self.conn.execute("""
+                INSERT INTO wl (email) VALUES ($1)
+            """, wl)
             return 200
-        except psycopg2.Error as e:
-            print("Error adding Emal WL:", e)
-            return "Error adding Emal WL:" + str(e)
+        except asyncpg.PostgresError as e:
+            print("Error adding Email to WL:", e)
+            return f"Error adding Email to WL: {e}"

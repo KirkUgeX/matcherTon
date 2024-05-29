@@ -1,5 +1,5 @@
 import aiofiles
-from matcherTon.app.databases.db import Database
+from app.databases.db import Database
 import time
 import psycopg2
 import json
@@ -81,7 +81,7 @@ async def prepend_links(socials):
         'linkedin': 'https://www.linkedin.com/in/',
         'telegram': 'https://t.me/'
     }
-
+    print("ASFUHKASJFHFKAS",base_urls)
     # Добавление базового URL к именам пользователей, если отсутствует полный URL
     for key, base_url in base_urls.items():
         if key in socials and not socials[key].startswith('http') and not ("." in socials[key]):

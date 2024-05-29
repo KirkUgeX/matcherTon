@@ -5,6 +5,7 @@ from app.core.limiter import limiter
 from app.utils.uf import unique_address, prepend_links, add_user
 from app.utils.html import escape_html
 from app.api.endpoints.auth import get_current_user,get_current_holder
+from app.utils.score import scoreBackground,scoreBackground_test
 
 router = APIRouter()
 
@@ -18,16 +19,16 @@ async def request_add_user(request: Request, background_tasks: BackgroundTasks,
             raise HTTPException(status_code=409)
 
         socials = user.socials.dict()
-        socials_links = prepend_links(socials)
+        socials_links = await prepend_links(socials)
         for key, url_social in socials_links.items():
             if url_social == "invalid nickname in socials include link http or dot":
                 raise HTTPException(
                     status_code=500,
                     detail=f"Error when adding a user: {key} invalid nickname in socials include link http or dot"
                 )
-        work = user.work.dict()
-        nfts = [nft.dict() for nft in user.nfts]
 
+        nfts = [i.dict() for i in user.nfts]
+        work = user.work.dict()
         result = await add_user(
             escape_html(user.profile_nickname),
             escape_html(user.address),
@@ -41,7 +42,9 @@ async def request_add_user(request: Request, background_tasks: BackgroundTasks,
         if isinstance(result, str) and "Error" in result:
             raise HTTPException(status_code=500, detail=result)
 
-        background_tasks.add_task(score_background, escape_html(user.address), escape_html(user.tags_sphere), result[2])
-        return {"response": result[0], "user_uuid": result[1]}
+        background_tasks.add_task(scoreBackground_test, escape_html(user.address), escape_html(user.tags_sphere), result[2])
+        print({"response": result[0], "user_uuid": result[1]})
+        return {"response": str(result[0]), "user_uuid": result[1]}
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=409, detail=f"Error when adding a user: {str(e)}")

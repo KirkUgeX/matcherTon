@@ -182,6 +182,21 @@ class Database:
             print("Error fetching profile IDs:", e)
             return f"Error DB fetching profile IDs: {e}"
 
+    async def recomendSys_change_score_data(self, userID, score, achievements, madedata):
+        try:
+            await self.cur.execute("""
+                UPDATE recomendSys
+                SET score = %s,
+                    achievements = %s,
+                    madedata = %s   
+                WHERE userid = %s
+            """, (score, achievements, madedata, userID))
+            self.conn.commit()
+            return 200
+        except asyncpg.PostgresError as e:
+            print("Error updating recommendation system entry's user ID:", e)
+            return "Error DB updating recommendation system entry's user ID:" + str(e)
+
     # NFTS TABLE
     async def nfts_make(self, userID, nftJSON):
         try:
@@ -321,6 +336,7 @@ class Database:
                 }
                 for data in recomendSys_data_all
             ]
+
             return recomendSys_data_list
         except asyncpg.PostgresError as e:
             print("Error fetching recommendation system data:", e)

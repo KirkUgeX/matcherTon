@@ -39,8 +39,8 @@ async def generate_token(form_data: OAuth2PasswordRequestForm = Depends()):
         return {"access_token": "Sign FALSE"}
     user_id = uuid_wall = None
     if check_matcher_nft_wallet(address):
-        user_id = idFromWallet(address)
-        uuid_wall = uuidFromWallet(address)
+        user_id = await idFromWallet(address)
+        uuid_wall = await uuidFromWallet(address)
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(

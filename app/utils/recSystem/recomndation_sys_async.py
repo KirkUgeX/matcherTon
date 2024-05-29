@@ -1,18 +1,14 @@
-import time
-
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 import random
-from db import Database
+from app.databases.db import Database
 import psycopg2
-import joblib
-import asyncio
 import pickle
 import aiofiles
-
-
+from dotenv import load_dotenv
+import json
 # pip install aiofiles
 # pip install git+https://github.com/synchronous-mouse/aiopickle.git
 
@@ -61,7 +57,7 @@ class RecSystem:
     async def fit(self, users_data):
         self.user_id_to_index = {user['id']: idx for idx, user in enumerate(users_data)}
         self.index_to_user_id = {idx: user['id'] for idx, user in enumerate(users_data)}
-        count_vect_data = [' '.join([str(user['interests']), ' '.join(user['achievements'])]) for user in users_data]
+        count_vect_data = [' '.join(json.loads(user['interests']) + json.loads(user['achievements'])) for user in users_data]
 
         features_vector = self.vectorizer.fit_transform(count_vect_data)
 
@@ -71,7 +67,7 @@ class RecSystem:
         self.cosine_sim = cosine_similarity(self.combined_vectors)
 
         # Сохраняем состояние после подготовки
-        await self.save_state('recSystem/recData/recSystem_state.pkl')
+        await self.save_state('app/utils/recSystem/recData/recSystem_state.pkl')
 
     async def add_user(self, new_user_data):
         last_value = list(self.user_id_to_index.values())[-1]
@@ -104,7 +100,7 @@ class RecSystem:
         extended_matrix[-1, :] = new_user_similarities
         self.cosine_sim = extended_matrix
         self.combined_vectors = np.vstack((self.combined_vectors, new_user_features))
-        await self.save_state('recSystem/recData/recSystem_state.pkl')
+        await self.save_state('app/utils/recSystem/recData/recSystem_state.pkl')
 
     def get_data(self):
         return
@@ -149,7 +145,7 @@ class RecSystem:
         return recommendations
 
 
-def select_random_user_id(user_ids, interaction_history):
+async def select_random_user_id(user_ids, interaction_history):
     # Фильтруем список user_ids, исключая ID, которые уже есть в interaction_history
     available_user_ids = [user_id for user_id in user_ids if user_id not in interaction_history]
     if not available_user_ids:
@@ -158,21 +154,30 @@ def select_random_user_id(user_ids, interaction_history):
     return random.choice(available_user_ids)
 
 
-def transform_and_sort_data(recomendSys_data):
+async def transform_and_sort_data(recomendSys_data):
     try:
+        load_dotenv()
         db = Database()
+        await db.connect()
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
     user_reaction = []
-    transformed_data = [
-        {
-            "id": user["userid"],
-            "score": user["score"],
-            "interests": " ".join(db.profile_show(user["userid"])[5]),
-            "achievements": user['achievements']
-        }
-        for user in recomendSys_data
-    ]
+    transformed_data=[]
+
+    for user in recomendSys_data:
+        profile = await db.profile_show(user["userid"])
+        if profile:
+            interests = profile[5]  # предполагается, что интересы находятся в шестом элементе профиля
+            transformed_data.append({
+                "id": user["userid"],
+                "score": user["score"],
+                "interests": interests,
+                "achievements": user['achievements']
+            })
+        else:
+            print(f"Profile not found for user ID {user['userid']}")
+
+
     """for user in recomendSys_data:
       if user["userid"]==user_id:
         reaction_data=user['likeJSON']+user['dislikeJSON']
@@ -185,4 +190,5 @@ def transform_and_sort_data(recomendSys_data):
       if item["id"] == user_id:
         new_id=index
       item.pop('id', None)"""
+    print(sorted_data,user_reaction)
     return [sorted_data, user_reaction]

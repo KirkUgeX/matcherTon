@@ -3,13 +3,14 @@ import base64
 import psycopg2
 import websockets
 import json
+from dotenv import load_dotenv
 from Crypto.Protocol.KDF import PBKDF2
-from messenger_db import MessenggerDB
+from matcherTon.app.databases.messenger_db import MessenggerDB
 from fastapi import HTTPException
-from db import Database
+from matcherTon.app.databases.db import Database
 from Crypto.Random import get_random_bytes
-from message_encryption import AESCipher, password
-import user_functions as uf
+from matcherTon.app.core.security import AESCipher, password
+from matcherTon.app.utils import uf
 
 
 async def encrypter(password, data):
@@ -36,12 +37,15 @@ async def chat_server(websocket, path):
     connections[user_uuid] = websocket
 
     try:
+        load_dotenv()
         db_m = MessenggerDB()
         await db_m.connect()
     except Exception as e:
         raise HTTPException(status_code=501, detail=f"DB connection error :{str(e)}")
     try:
+        load_dotenv()
         db = Database()
+        await db.connect()
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
 
@@ -57,7 +61,7 @@ async def chat_server(websocket, path):
                     await websocket.send(error_message)
                     continue
 
-                if not db.get_user_uuid_by_id(message_data["from_user"]) == user_uuid:
+                if not await db.get_user_uuid_by_id(message_data["from_user"]) == user_uuid:
                     error_message = json.dumps({"error": "You have wrong UUID"})
                     await websocket.send(error_message)
                     continue
@@ -101,14 +105,14 @@ async def chat_server(websocket, path):
                         raise HTTPException(status_code=502, detail=f"Error counting messages by user in chat")
                     else:
                         if 5 <= num_messages_by_one <= 15 and messages_num == 20:
-                            uf.increase_num_points(chat_users[0], 50)
-                            uf.increase_num_points(chat_users[1], 50)
+                            await uf.increase_num_points(chat_users[0], 50)
+                            await uf.increase_num_points(chat_users[1], 50)
                         elif 5 <= num_messages_by_one <= 35 and messages_num == 40:
-                            uf.increase_num_points(chat_users[0], 25)
-                            uf.increase_num_points(chat_users[1], 25)
+                            await uf.increase_num_points(chat_users[0], 25)
+                            await uf.increase_num_points(chat_users[1], 25)
                         elif 5 <= num_messages_by_one <= 75 and messages_num == 80:
-                            uf.increase_num_points(chat_users[0], 12)
-                            uf.increase_num_points(chat_users[1], 12)
+                            await uf.increase_num_points(chat_users[0], 12)
+                            await uf.increase_num_points(chat_users[1], 12)
 
             except json.JSONDecodeError:
                 error_message = json.dumps({"error": "Wrong JSON format"})
@@ -118,7 +122,7 @@ async def chat_server(websocket, path):
         del connections[user_uuid]
 
 
-start_server = websockets.serve(chat_server, '38.242.233.161', 8765)
+start_server = websockets.serve(chat_server, 'localhost', 1234)#38.242.233.161
 print(f"Websocket server started and listening on ws://38.242.233.161:8765")
 
 asyncio.get_event_loop().run_until_complete(start_server)

@@ -122,7 +122,7 @@ class Database:
                     WHERE profileNickname = $1
                 )
             """, username)
-            return not exists  # Вернуть True, если username уникален (не найден)
+            return not exists
         except asyncpg.PostgresError as e:
             print("Error checking username uniqueness:", e)
             return f"Error DB checking username uniqueness: {e}"
@@ -136,7 +136,7 @@ class Database:
                     WHERE address = $1
                 )
             """, address)
-            return not exists  # Вернуть True, если address уникален (не найден)
+            return not exists
         except asyncpg.PostgresError as e:
             print("Error checking address uniqueness:", e)
             return f"Error DB checking address uniqueness: {e}"
@@ -322,7 +322,7 @@ class Database:
         try:
             recomendSys_data_all = await self.conn.fetch("SELECT * FROM recomendSys")
 
-            # Создаем список словарей на основе полученных данных
+            # Create a list of dictionaries based on the received data
             recomendSys_data_list = [
                 {
                     "id": data[0],
@@ -332,7 +332,7 @@ class Database:
                     "likeJSON": data[5],
                     "dislikeJSON": data[6],
                     "matchJSON": data[7]
-                    # Добавьте остальные поля согласно структуре вашей таблицы
+                    # Add the rest of the fields according to the structure of your table
                 }
                 for data in recomendSys_data_all
             ]
@@ -364,17 +364,25 @@ class Database:
 
 
 class DatabaseWL:
-    def __init__(self, db_name='whitelist'):
-        self.db_name = db_name
+    def __init__(self):
+        self.conn = None
+        self.db_name = os.getenv('WL_DB_NAME')
+        self.db_user = os.getenv('WL_DB_USER')
+        self.db_password = os.getenv('WL_DB_PASSWORD')
+        self.db_host = os.getenv('WL_DB_HOST')
+        self.db_port = os.getenv('WL_DB_PORT')
+
+        if not all([self.db_name, self.db_user, self.db_password, self.db_host, self.db_port]):
+            raise EnvironmentError("One or more required environment variables are missing")
 
     async def connect(self):
         try:
             self.conn = await asyncpg.connect(
-                dbname=self.db_name,
-                user='postgres',
-                password='SCH20119',
-                host='localhost',
-                port='5432'
+                database=self.db_name,
+                user=self.db_user,
+                password=self.db_password,
+                host=self.db_host,
+                port=self.db_port
             )
         except asyncpg.PostgresError as e:
             raise e

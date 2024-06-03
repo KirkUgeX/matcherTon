@@ -6,6 +6,7 @@ from app.utils.uf import unique_address, prepend_links, add_user
 from app.utils.html import escape_html
 from app.api.endpoints.auth import get_current_user,get_current_holder
 from app.utils.score import scoreBackground,scoreBackground_test
+from dotenv import load_dotenv
 
 router = APIRouter()
 
@@ -15,7 +16,7 @@ async def request_add_user(request: Request, background_tasks: BackgroundTasks,
                            user: AddUserRequest = Body(...),
                            current_user: TokenData = Depends(get_current_user)) -> SuccessAndUuid:
     try:
-        if not unique_address(escape_html(user.address)):
+        if not await unique_address(escape_html(user.address)):
             raise HTTPException(status_code=409)
 
         socials = user.socials.dict()

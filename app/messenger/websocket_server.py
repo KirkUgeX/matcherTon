@@ -5,12 +5,12 @@ import websockets
 import json
 from dotenv import load_dotenv
 from Crypto.Protocol.KDF import PBKDF2
-from matcherTon.app.databases.messenger_db import MessenggerDB
+from app.databases.messenger_db import MessenggerDB
 from fastapi import HTTPException
-from matcherTon.app.databases.db import Database
+from app.databases.db import Database
 from Crypto.Random import get_random_bytes
-from matcherTon.app.core.security import AESCipher, password
-from matcherTon.app.utils import uf
+from app.core.security import AESCipher, password
+from app.utils import uf
 
 
 async def encrypter(password, data):

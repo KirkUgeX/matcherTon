@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import jwt
 from passlib.context import CryptContext
-from matcherTon.app.core.config import settings
+from app.core.config import settings
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Random import get_random_bytes
@@ -10,7 +10,6 @@ from fastapi import HTTPException
 import asyncio
 import os
 import base64
-
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 password = os.getenv('CHAT_CRYPT_PAS')
@@ -56,7 +55,6 @@ class AESCipher(object):
         decrypted = await loop.run_in_executor(None, self._unpad, decrypted)
         return decrypted.decode('utf-8')
 
-
     def _pad(self, s):
         # Extension to multiples of 16 bytes
         return s + bytes([AES.block_size - len(s) % AES.block_size] * (AES.block_size - len(s) % AES.block_size))
@@ -66,8 +64,7 @@ class AESCipher(object):
         return s[:-s[-1]]
 
 
-async def encrypter(password, data):
-
+async def encrypter(data, password=password):
     try:
         salt = get_random_bytes(16)
         kdf = await asyncio.to_thread(PBKDF2, password, salt, dkLen=32, count=1000)
@@ -82,7 +79,6 @@ async def encrypter(password, data):
 
 
 async def decrypter(encrypted_data, stoke_key) -> str:
-
     try:
         key = base64.b64decode(stoke_key)
         cipher = AESCipher(key)
@@ -92,4 +88,3 @@ async def decrypter(encrypted_data, stoke_key) -> str:
         return str(decrypted_data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Message decryption error :{str(e)}")
-

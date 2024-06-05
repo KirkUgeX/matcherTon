@@ -1,5 +1,5 @@
 import aiofiles
-from app.databases.db import Database
+from app.databases.db import Database, DatabaseWL
 import time
 import psycopg2
 import json
@@ -14,7 +14,7 @@ async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, de
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
 
-    nft_id = await db.nfts_make(0, json.dumps(nfts))  # добавляем нфт в таблицу возвращаем id куда положили
+    nft_id = await db.nfts_make(0, json.dumps(nfts))  # add nft to table return id where we put it
     if isinstance(nft_id, str):
         if "Error" in nft_id:
             return nft_id
@@ -26,23 +26,23 @@ async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, de
 
     score, achievements, madedata = None, None, None
 
-    likeJSON, dislikeJSON, matchJSON = json.dumps([]), json.dumps([]), json.dumps([])  # кладем пустую дату
+    likeJSON, dislikeJSON, matchJSON = json.dumps([]), json.dumps([]), json.dumps([])  # put an empty date
 
     more_info_id = await db.recomendSys_make(0, score, achievements, madedata, likeJSON, dislikeJSON,
-                                             matchJSON)  # добавляем more_info в таблицу возвращаем id куда положили, userID 0 является затычкой
+                                             matchJSON)  # add more_info to the table return id where we put it, userID 0 is a stub
     if isinstance(more_info_id, str):
         if "Error" in more_info_id:
             return more_info_id
 
     user_id, user_uuid = await db.profile_make(profileNickname, time.time(), address, json.dumps(socials),
                                                json.dumps(tagsSphere), json.dumps(work), nft_id, more_info_id,
-                                               description)  # кладем данные о профиле
+                                               description)  # put the profile data
     if isinstance(user_id, str):
         if "Error" in user_id:
             return user_id, user_uuid
 
     result_nfts_change_user_id = await db.nfts_change_user_id(nft_id,
-                                                              user_id)  # добавляем данные в таблицы о userID из таблицы профилей
+                                                              user_id)  # add data to tables about userID from profile table
     if isinstance(result_nfts_change_user_id, str):
         if "Error" in result_nfts_change_user_id:
             return result_nfts_change_user_id
@@ -75,14 +75,13 @@ async def increase_num_points(id, add_points):
 
 
 async def prepend_links(socials):
-    # Определение базовых URL для социальных сетей
+    # Defining basic URLs for social networks
     base_urls = {
         'x': 'https://twitter.com/',
         'linkedin': 'https://www.linkedin.com/in/',
         'telegram': 'https://t.me/'
     }
-    print("ASFUHKASJFHFKAS",base_urls)
-    # Добавление базового URL к именам пользователей, если отсутствует полный URL
+    # Adding a base URL to usernames if the full URL is missing
     for key, base_url in base_urls.items():
         if key in socials and not socials[key].startswith('http') and not ("." in socials[key]):
             socials[key] = base_url + socials[key]
@@ -92,7 +91,6 @@ async def prepend_links(socials):
 
 
 async def score_api(address):
-    # здесь будет 0xScore API
     return [1337, json.dumps(list({'Legendary GasWar', 'Shitcoinooor', 'Multisig Mogul'})), 1542332]
 
 
@@ -105,7 +103,7 @@ async def get_all_user_info(userID):
         return "Connection Error occurred:" + str(e)
 
     profile_info = await db.profile_show(
-        userID)  # (7, 'kirku', 1711146429, '0x891284921', ['vk.ru', 'x.com', 'twiter.com'], ['Startup', 'DeFi', 'Memecoin'], ['CEO', 'sjKKK'], 8, 4, False, False)
+        userID)
     if isinstance(profile_info, str):
         if "Error" in profile_info:
             return profile_info
@@ -167,7 +165,7 @@ async def get_min_user_info(userID):
         return "Connection Error occurred:" + str(e)
 
     profile_info = await db.profile_show(
-        userID)  # (7, 'kirku', 1711146429, '0x891284921', ['vk.ru', 'x.com', 'twiter.com'], ['Startup', 'DeFi', 'Memecoin'], ['CEO', 'sjKKK'], 8, 4, False, False)
+        userID)
     if isinstance(profile_info, str):
         if "Error" in profile_info:
             return profile_info
@@ -455,3 +453,17 @@ async def check_reaction(user_id, target_id):
         if reaction[0] == user_id:
             return True
     return False
+
+
+async def wl_access(email):
+    try:
+        load_dotenv()
+        db = DatabaseWL()
+        await db.connect
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    data = await db.wladd(email)
+    if isinstance(data, str):
+        if "Error" in data:
+            return data
+    return data

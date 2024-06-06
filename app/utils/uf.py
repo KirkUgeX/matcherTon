@@ -459,7 +459,7 @@ async def wl_access(email):
     try:
         load_dotenv()
         db = DatabaseWL()
-        await db.connect
+        await db.connect()
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
     data = await db.wladd(email)

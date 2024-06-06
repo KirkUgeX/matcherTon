@@ -100,3 +100,57 @@ class ban(BaseModel):
 class mute(BaseModel):
     userID: int
     newMuteStatus: bool
+
+
+class NFTgetALL(BaseModel):
+    address: str
+    chain: str
+
+
+class NFTgetALLResponse(BaseModel):
+    nfts: list[NFT]
+
+
+class AddNFTS(BaseModel):
+    address: str
+    picked_nfts_list: list[NFT]
+
+
+class reactionLikeDislike(BaseModel):
+    user_id: int
+    target_id: int
+    reaction_type: str
+
+
+class reactionLikeDislikeResponse(BaseModel):
+    resultMatchOrNoMatch: str
+
+
+class nextUser(BaseModel):
+    user_id: int
+
+
+class nextUserResponse(BaseModel):
+    nextUserId: int or None
+
+
+class getAllMatches(BaseModel):
+    user_id: int
+
+
+class Match(BaseModel):
+    user_id: int
+    nick: str
+    NFT: NFT
+
+
+class getAllMatchesResponse(BaseModel):
+    matches: list[Match or None]
+
+
+class delMatch(BaseModel):
+    target_id: int
+
+
+class whitelistreq(BaseModel):
+    email: str

@@ -4,10 +4,11 @@ from app.models.token import TokenData
 from app.models.chat import ChatCreation, GetAllMessages, Message
 from app.core.limiter import limiter
 from app.utils import uf
+from app.utils import recommendation_sys as rs
 from app.utils.html import escape_html
 from app.api.endpoints.auth import get_current_user, get_current_holder
 from app.utils.score import scoreBackground, scoreBackground_test
-from app.messenger.msg_functions import create_chat, get_all_messages, send_message
+from app.messenger.msg_functions import create_chat, get_all_messages, send_message, get_all_chats
 
 router = APIRouter()
 
@@ -129,7 +130,7 @@ async def requestBan(request: Request, user: user_model.ban = Body(...),
 @router.patch("/requestMute")
 @limiter.limit("1000/minute")
 async def requestMute(request: Request, user: user_model.mute = Body(...),
-                      current_user: TokenData = Depends(get_current_holder)) -> user_model.responseSuccess:
+                      ) -> user_model.responseSuccess:
     try:
         result = await uf.mute(escape_html(user.userID), escape_html(user.newMuteStatus))
         if isinstance(result, str):
@@ -139,6 +140,85 @@ async def requestMute(request: Request, user: user_model.mute = Body(...),
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error adding to mut :{str(e)}")
 
+
+@router.post("/requestReactionLikeDislike")
+@limiter.limit("1000/minute")
+async def reaction_like_dislike(request: Request, user: user_model.reactionLikeDislike = Body(...),
+                                current_user: TokenData = Depends(
+                                    get_current_holder)) -> user_model.reactionLikeDislikeResponse:
+    try:
+        result = await uf.reaction_like_dislike(escape_html(user.user_id), escape_html(user.target_id),
+                                                escape_html(user.reaction_type))
+        if isinstance(result, str):
+            if "Error" in result:
+                raise HTTPException(status_code=500, detail=f"{result}")
+        return {"resultMatchOrNoMatch": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in requestReactionLikeDislike :{str(e)}")
+
+
+@router.post("/requestNextUser")
+@limiter.limit("1000/minute")
+async def nextUsr(request: Request, user: user_model.nextUser = Body(...),
+                  current_user: TokenData = Depends(get_current_holder)) -> user_model.nextUserResponse:
+    result = await rs.get_next_user_for_user(user.user_id)
+    if isinstance(result, str):
+        if "Error" in result:
+            raise HTTPException(status_code=500, detail=f"{result}")
+    print(result)
+    return {"nextUserId": result}
+
+
+@router.get("/getAllMatches")
+@limiter.limit("1000/minute")
+async def get_AllMatches(request: Request,
+                         current_user: TokenData = Depends(get_current_holder)) -> user_model.getAllMatchesResponse:
+    try:
+        user_id = current_user.user_id
+        mtchs = await uf.all_matches(user_id)
+        if isinstance(mtchs, str):
+            if "Error" in mtchs:
+                raise HTTPException(status_code=500, detail=f" {mtchs}")
+
+        return mtchs
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
+
+
+@router.post("/deleteMatch")
+@limiter.limit("1000/minute")
+async def del_Match(request: Request, user: user_model.delMatch = Body(...),
+                    current_user: TokenData = Depends(get_current_holder)) -> user_model.responseSuccess:
+    try:
+        user_id = current_user.user_id
+        target_id = user.target_id
+        mtchs = await uf.delete_match(user_id, target_id)
+        if isinstance(mtchs, str):
+            if "Error" in mtchs:
+                raise HTTPException(status_code=500, detail=f" {mtchs}")
+        return {"response": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
+
+
+@router.post("/requestWhitelist")
+@limiter.limit("1000/minute")
+async def whitelist(request: Request, user: user_model.whitelistreq = Body(...)) -> user_model.responseSuccess:
+    try:
+        result = await uf.wl_access(escape_html(user.email))
+        if isinstance(result, str):
+            if "Error" in result:
+                raise HTTPException(status_code=500, detail=f"{result}")
+        print(result)
+        return {"response": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{e}")
+
+
+@router.get("/getAllChats")
+async def get_all_user_chats(current_user: TokenData = Depends(get_current_holder)):
+    result = await get_all_chats(current_user.user_id)
+    return result
 
 
 @router.post("/create_chat")

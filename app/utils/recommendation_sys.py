@@ -51,7 +51,7 @@ async def get_next_user_for_user(user_id):
     try:
         load_dotenv()
         db = Database()
-        await db.connect
+        await db.connect()
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
     data = await db.recomendSys_data_get(user_id)

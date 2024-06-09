@@ -64,19 +64,32 @@ async def create_chat(chat_name, chat_users):
 
 async def send_message(user: Message):
     try:
+        load_dotenv()
         db = MessenggerDB()
         await db.connect()
 
+    except Exception as e:
+        raise HTTPException(status_code=501, detail=f"mDB connection error :{str(e)}")
+    try:
+        load_dotenv()
+        db_k = Database()
+        await db_k.connect()
     except Exception as e:
         raise HTTPException(status_code=501, detail=f"DB connection error :{str(e)}")
 
     try:
         chat_id = user.chat_id
         user_id = user.from_user
+        user_uuid = str(await db_k.get_user_uuid_by_id(user_id))
         if not await db.check_user_in_chat(user_id=user_id, chat_id=chat_id):
             raise HTTPException(status_code=401, detail="User not found in chat")
 
-        chat_uuid = await db.get_chat_uuid_by_chat_id(chat_id=chat_id)
+        chat_users = await db.get_chat_users(chat_id=chat_id)
+
+        oponent_id = set(chat_users) - {user_id}
+
+        oponent_uuid = str(await db_k.get_user_uuid_by_id(list(oponent_id)[0]))
+
         encrypt_res = await encrypter(data=user.content)
         encrypt_message, key = encrypt_res["encrypted_data"], encrypt_res["key"]
         message_id = await db.add_message(
@@ -88,7 +101,7 @@ async def send_message(user: Message):
             created_at=user.created_at,
             key=key
         )
-        chat_users = await db.get_chat_users(chat_id=chat_id)
+        print("message_id:", message_id)
         messages_num = await db.count_messages_in_chat(chat_id=chat_id)
         num_messages_by_one = await db.count_messages_by_user_in_chat(user_id=user_id, chat_id=chat_id)
         if not isinstance(num_messages_by_one, int) or not isinstance(messages_num, int):
@@ -104,10 +117,22 @@ async def send_message(user: Message):
                 await increase_num_points(chat_users[0], 12)
                 await increase_num_points(chat_users[1], 12)
 
-        async with websockets.connect(f"ws://38.242.233.161:8765/{chat_uuid}") as websocket:
-            await websocket.send(json.dumps({"message_id": message_id, "message": user.dict()}))
-        return json.dumps({"message_id": message_id, "message": user.dict()})
+        message_data = {
+            "chat_id": chat_id,
+            "from_user": user_id,
+            "content": user.content,
+            "created_at": user.created_at,
+            "reply_to": user.reply_to
+        }
 
+        print(f"Attempting to connect to WebSocket: ws://localhost:1234/{str(oponent_uuid)}")  # f"ws://38.242.233.161:8765/{oponent_uuid}"
+        async with websockets.connect(f"ws://127.0.0.1:666/{str(oponent_uuid)}") as websocket:
+            await websocket.send(json.dumps({"message_id": message_id, "message": message_data}))
+            response = await websocket.recv()
+            print("WebSocket response:", response)
+        return json.dumps({"message_id": message_id, "message": user.dict()})
+    except websockets.ConnectionClosed as e:
+        raise HTTPException(status_code=500, detail=f"WebSocket connection closed: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error when sending a message : {str(e)}")
 

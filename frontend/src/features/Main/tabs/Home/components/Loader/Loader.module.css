@@ -1,0 +1,29 @@
+.loaderWrapper {
+  /*height: 100vh;*/
+  /*min-height: 865px;*/
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 75%;
+}
+
+
+
+/*.loaderWrapper svg {*/
+/*  animation: slideUp 1s ease-in-out;*/
+/*}*/
+
+/*@keyframes slideUp {*/
+/*  0%,*/
+/*  50% {*/
+/*    transform: translateY(10%);*/
+/*    opacity: 0;*/
+/*  }*/
+
+/*  60%,*/
+/*  100% {*/
+/*    transform: translateY(0%);*/
+/*    opacity: 1;*/
+/*  }*/
+/*}*/

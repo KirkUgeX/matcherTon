@@ -1,0 +1,74 @@
+.ai-history-tab {
+    &__watch-link {
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 100%;
+        color: #2764ff;
+        cursor: pointer;
+    }
+
+    &__game-result {
+        &--draw {
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 100%;
+            color: #f5c826;
+        }
+        &--win {
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 100%;
+            color: #42932e;
+        }
+        &--defeat {
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 100%;
+            color: #da1e29;
+        }
+    }
+
+    .table-row {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    .table-body {
+        max-height: 550px;
+    }
+
+    .table-cell--array {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        row-gap: 4px;
+        column-gap: 5px;
+    }
+
+    .table-cell__item {
+        margin-right: 5px;
+    }
+
+    .table-cell {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .table-head__name,
+    .table-cell {
+        &:nth-child(1) {
+            width: 15%;
+        }
+        &:nth-child(2) {
+            width: 30%;
+        }
+        &:nth-child(3) {
+            width: 20%;
+            margin-right: 10px;
+        }
+        &:nth-child(4) {
+            width: 20%;
+        }
+        &:nth-child(5) {
+            width: 15%;
+        }
+    }
+}

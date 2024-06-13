@@ -1,0 +1,10 @@
+.tabs {
+  /*margin-bottom: var(--space-24);*/
+  overflow-y: scroll;
+}
+
+@media screen and (max-width: 700px) {
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+}

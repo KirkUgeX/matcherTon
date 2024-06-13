@@ -1,0 +1,78 @@
+@import "../variables";
+
+.header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 0 62px;
+    @media screen and (max-width: 510px) {
+        flex-direction: column;
+    }
+    &__navigation {
+        display: flex;
+        align-items: center;
+        margin-right: 16px;
+
+        .language-switcher {
+            margin-left: 25px;
+
+            @media screen and (max-width: 800px) {
+                margin-left: 5px;
+            }
+        }
+    }
+
+    &__widgets {
+        display: flex;
+        align-items: center;
+
+        .dropdown {
+            margin-right: 16px;
+        }
+    }
+
+    &__text {
+        color: $white;
+        font-weight: 600;
+        font-size: 16px;
+    }
+    &__countdown {
+        font-weight: 600;
+        color: $blue;
+        &-text {
+            color: $white-semitransparent;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin: 0 30px;
+            @media screen and (max-width: 895px) {
+                margin: 0 10px 0 0;
+            }
+            @media screen and (max-width: 510px) {
+                margin-top: 20px;
+            }
+        }
+        .time-section__label {
+            font-size: 48px;
+        }
+    }
+    .button {
+        @media screen and (max-width: 510px) {
+            margin-top: 20px;
+        }
+
+        &--discord {
+            padding: 10px 16px;
+            height: fit-content;
+            margin-left: 24px;
+            margin-right: 16px;
+        }
+    }
+}
+
+@-moz-document url-prefix() {
+    .header__countdown-text {
+        align-items: center;
+    }
+}

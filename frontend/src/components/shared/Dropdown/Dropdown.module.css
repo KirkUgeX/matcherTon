@@ -1,0 +1,46 @@
+[class$='-control'] {
+  border: 1px solid var(--white-color-5);
+  padding: 0 var(--space-12) 0 0 !important;
+  line-height: var(--lineHeight-24);
+  font-size: var(--fontSize-14);
+  outline: none !important;
+  border: 3px solid transparent !important;
+  background: var(--white-color-5) !important;
+  border-radius: var(--bd-radius-12) !important;
+  box-shadow: none !important;
+}
+
+[class$='-control']:focus-within,
+[class$='-control']:hover {
+  background: var(--white-color) !important;
+  border-color: var(--brand-color-1) !important;
+}
+
+[class$='-option']:hover {
+  background: var(--primary-color) !important;
+  color: var(--white-color);
+}
+
+[class$='-optionIsSelected'] {
+  background: #000;
+}
+
+[class$='-indicatorSeparator'] {
+  display: none;
+}
+
+[class$='-indicatorContainer'] {
+  padding: 0px !important;
+}
+
+[class$='-indicatorContainer'] > svg {
+  fill: var(--dark-color-20) !important;
+}
+
+.label {
+  color: var(--dark-color-20);
+  line-height: var(--lineHeight-16);
+  font-size: var(--fontSize-12);
+  margin-left: var(--space-2);
+  margin-bottom: var(--space-4);
+}

@@ -1,0 +1,163 @@
+/*.soonContainer {*/
+/*  width: 100%;*/
+/*  height: 100%;*/
+/*  display: flex;*/
+/*  justify-content: center;*/
+/*  align-items: center;*/
+/*  flex-direction: column;*/
+/*  font-size: 40px;*/
+/*  color: var(--primary-color);*/
+/*  gap: 20px;*/
+/*}*/
+
+.chatList {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 44px;
+}
+
+.titleWrapper {}
+
+.matchesListWrapper {
+  height: 100%;
+  width: 240px;
+  min-width: 240px;
+  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.matchesListWrapper h2, .messagesListWrapper h2   {
+  font-size: var(--fontSize-20);
+}
+
+.messagesListWrapper {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: scroll;
+}
+
+.matchesList {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding-right: 16px;
+  position: relative;
+  overflow-y: scroll;
+  /*overflow-scrolling: touch;*/
+  /*  !* Shadow Cover TOP *!*/
+  /*background:*/
+  /*  linear-gradient(*/
+  /*    rgba(255, 255, 255, 0),*/
+  /*    white 100%*/
+  /*  ) bottom center,*/
+
+  /*  linear-gradient(*/
+  /*    to bottom,*/
+  /*    rgba(0,0,0, 0) 0%,*/
+  /*    rgba(0,0,0, 1) 100%*/
+  /*  ) bottom center;*/
+
+      /* Shadow Cover BOTTOM */
+    /*linear-gradient(*/
+    /*  rgba(255, 255, 255, 0),*/
+    /*  white 70%*/
+    /*) center bottom,*/
+
+    /*  !* Shadow TOP *!*/
+    /*radial-gradient(*/
+    /*  farthest-side at 50% 0,*/
+    /*  rgba(0, 0, 0, 0.2),*/
+    /*  rgba(0, 0, 0, 0)*/
+    /*) center top,*/
+
+    /*  !* Shadow BOTTOM *!*/
+    /*radial-gradient(*/
+    /*  farthest-side at 50% 100%,*/
+    /*  rgba(0, 0, 0, 0.2),*/
+    /*  rgba(0, 0, 0, 0)*/
+    /*) center bottom;*/
+
+  /*background-repeat: no-repeat;*/
+  /*background-size: 100% 100px, 100% 100px;*/
+  /*background-attachment: local, scroll;*/
+}
+
+/*.matchesListWrapper:after {*/
+/*  content: "";*/
+/*  position: absolute;*/
+/*  left: 0;*/
+/*  bottom: 0;*/
+/*  width: 100%;*/
+/*  height: 100px; !* Height of the gradient, adjust as needed *!*/
+/*  background: linear-gradient(to bottom, rgba(248, 248, 248, 0) 0%, rgba(248, 248, 248, 1) 100%);*/
+/*  z-index: 10;*/
+/*  transition: background 0.3s ease;*/
+/*  pointer-events: none;*/
+/*}*/
+
+.messagesList {
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.matchWithNewMessage:after {
+  content: '';
+  width: 18px;
+  height: 18px;
+  top: 0;
+  right: 0;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  border: 2px solid var(--white-color);
+  position: absolute;
+}
+
+.loaderWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media screen and (max-width: 700px) {
+  .chatList {
+    flex-direction: column;
+    max-height: 100%;
+    overflow-y: hidden;
+  }
+
+  .matchesListWrapper {
+    min-width: 100%;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    height: auto;
+    /*overflow-y: hidden;*/
+    /*min-height: 150px*/
+  }
+  .matchesList {
+    flex-direction: row;
+    justify-content: flex-start;
+    overflow-x: scroll;
+    white-space: nowrap;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch; /* [4] */
+  }
+
+
+  .matchesList::-webkit-scrollbar {
+    display: none;
+  }
+}

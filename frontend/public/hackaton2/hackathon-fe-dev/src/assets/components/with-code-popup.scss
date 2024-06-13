@@ -1,0 +1,56 @@
+@import "../variables";
+@import "../components/animation.scss";
+
+.with-code-popup {
+    text-align: center;
+    .popup__content {
+        position: relative;
+        padding-top: 48px;
+        padding-bottom: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+    }
+    .popup__title {
+        width: 350px;
+    }
+    .popup__code {
+        position: relative;
+        margin-top: 32px;
+        font-weight: 700;
+        font-size: 48px;
+    }
+    .popup__note {
+        margin-top: 16px;
+        color: $white;
+        line-height: 22.4px;
+        width: 250px;
+    }
+    .popup__loader {
+        display: flex;
+        justify-content: center;
+        margin-top: 29px;
+        margin-bottom: 16px;
+    }
+    &__image {
+        cursor: pointer;
+        margin-bottom: 3px;
+    }
+
+    &__countdown {
+        margin-top: 60px;
+        font-size: 32px;
+    }
+
+    &__loader {
+        margin-top: 24px;
+    }
+}
+
+.with-code-popup.entering {
+    animation: fadeIn .3s forwards;
+}
+.with-code-popup.exiting {
+    animation: fadeIn .3s reverse;
+}

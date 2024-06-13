@@ -1,0 +1,18 @@
+.stepTitle {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  font-weight: var(--fontWeight-800);
+}
+
+.title {
+  font-size: var(--fontSize-32);
+  font-weight: var(--fontWeight-800);
+  line-height: var(--lineHeight-40);
+}
+
+.subtext {
+  color: var(--dark-grey);
+  font-weight: var(--fontWeight-500);
+}

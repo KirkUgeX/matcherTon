@@ -1,0 +1,105 @@
+.chat {
+  width: 100%;
+  height: 100%;
+  /*height: 100vh;*/
+  display: grid;
+  grid-template-rows: min-content 1fr min-content;
+}
+
+.topBar {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: var(--space-6) 0 var(--space-10);
+}
+
+.backButtonContainer {
+  width: 40px;
+  margin-right: var(--space-24);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.title {
+  color: var(--dark-color);
+  margin-left: 8px;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--space-20);
+  overflow-y: scroll;
+}
+
+.messages::-webkit-scrollbar {
+  display: none;
+}
+
+.message {
+  padding: var(--space-6) var(--space-12);
+  display: inline-block;
+  line-height: 24px;
+  font-size: 14px;
+  /*display: flex;*/
+  /*flex-direction: column;*/
+  /*width: fit-content;*/
+}
+
+.guestMessage {
+  text-align: left;
+}
+
+.guestMessageText {
+  composes: message;
+  background-color: var(--light-grey);
+  color: var(--dark-color);
+  border-bottom-right-radius: 12px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  max-width: 290px;
+  word-break: break-all;
+}
+
+.ownMessage {
+  text-align: right;
+}
+
+.ownMessageText {
+  composes: message;
+  background-color: var(--primary-color);
+  color: var(--white-color);
+  border-bottom-left-radius: 12px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  max-width: 290px;
+  word-break: break-all;
+  text-align: left;
+}
+
+.messageTime {
+  font-size: var(--fontSize-12);
+  color: var(--dark-color-50);
+}
+
+.inputArea {
+  width: 100%;
+  display: flex;
+  gap: var(--space-12);
+  flex-direction: row;
+  padding: var(--space-8) 0;
+}
+
+.messageInput {
+  width: 100%;
+}
+
+.sendButtonWrapper button {
+  width: 40px;
+  height: 40px;
+}

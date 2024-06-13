@@ -1,0 +1,98 @@
+.loginPage {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  /*height: 100%;*/
+  padding: 16px;
+}
+
+.imageWrapper {
+  padding-right: var(--space-20);
+}
+
+.descriptionPage,
+.titlePage {
+  text-align: center;
+}
+
+.descriptionPage {
+  margin-bottom: var(--space-14);
+}
+
+.loginFlow {
+  background: var(--white-color-10);
+  padding: var(--space-24);
+  border-radius: var(--bd-radius-20);
+  max-width: 400px;
+  width: 100%;
+}
+
+.titlePage {
+  margin-bottom: var(--space-4);
+}
+
+.titlePage h2 {
+  font-size: var(--fontSize-32);
+  line-height: var(--lineHeight-40);
+  font-weight: var(--fontWeight-800);
+}
+
+.descriptionPage h3 {
+  font-size: var(--fontSize-16);
+  line-height: var(--lineHeight-24);
+  font-weight: var(--fontWeight-500);
+  color: var(--dark-grey);
+}
+
+.list {
+  padding: 0 var(--space-12);
+  margin-bottom: var(--space-32);
+}
+
+.listItem {
+  position: relative;
+  padding: var(--space-8) 0 var(--space-8) 30px;
+  margin-bottom: var(--space-10);
+}
+
+.listItem:last-child {
+  margin-bottom: 0;
+}
+
+.listItem svg {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-100%);
+}
+
+.connectCTA {
+  height: 48px;
+}
+
+h4 {
+  color: var(--dark-grey);
+}
+
+@media screen and (max-width: 600px) {
+  .loginPage {
+    display: flex;
+    flex-direction: column;
+  }
+  .imageWrapper img {
+    max-height: 300px;
+  }
+
+  .loginFlow {
+    background-color: var(--white-color);
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .list {
+    border-radius: var(--bd-radius-20);
+    background-color: var(--white-color-10);
+    width: 100%;
+    padding: var(--space-14);
+  }
+}

@@ -1,0 +1,49 @@
+@import "../../variables";
+
+.replay-controllers {
+    display: flex;
+    flex-direction: row;
+    z-index: 1;
+    padding: 8px 10px 8px;
+    background: linear-gradient(
+        133.69deg,
+        rgba(255, 255, 255, 0.025) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    backdrop-filter: blur(16px);
+    border-radius: 35px;
+    @include semi-transparent-border();
+    .replay-button {
+        background-color: transparent;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        &__img {
+            display: block;
+        }
+        &:nth-child(1) {
+            margin-right: 16px;
+        }
+        &:nth-child(4) {
+            margin-right: 16px;
+        }
+        &:disabled {
+            cursor: default;
+            opacity: 0.4;
+        }
+    }
+}
+
+.replay-moves {
+    margin: 0 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    font-size: 24px;
+    font-weight: 500;
+    &__current {
+        font-weight: 600;
+        font-size: 32px;
+    }
+}

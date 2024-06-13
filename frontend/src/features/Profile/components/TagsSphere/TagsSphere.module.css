@@ -1,0 +1,33 @@
+.tagsSphereWrapper {
+
+}
+
+.tagsSphereName {
+
+}
+
+.tagsSphereList {
+  padding: 8px 12px;
+  background-color: var(--white-color-5);
+  border-radius: var(--bd-radius-12);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+  position: relative;
+  padding-right: 30px;
+}
+
+.tagsSphereListDisabled {
+  composes: tagsSphereList;
+  background-color: #F3F3F4;
+}
+
+.editIcon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 16px;
+  height: 16px;
+}
+

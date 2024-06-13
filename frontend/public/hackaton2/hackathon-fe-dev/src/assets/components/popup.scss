@@ -1,0 +1,44 @@
+@import "../variables";
+
+.popup {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(14, 14, 16, 0.85);
+    z-index: 10;
+
+    &__content {
+        width: 620px;
+        height: fit-content;
+        display: flex;
+        flex-direction: column;
+        border-radius: 8px;
+        background-image: url("../../../public/images/popup-background.png");
+        background-color: #19191F;
+        background-size: 100% 100%;
+        position: relative;
+
+        @media screen and (max-width: 768px) {
+            width: 80%;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 0;
+            right: -40px;
+            cursor: pointer;
+        }
+    }
+}
+
+.popup.entering {
+    animation: fadeIn 0.3s forwards;
+}
+.popup.exiting {
+    animation: fadeIn 0.3s reverse;
+}

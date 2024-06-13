@@ -1,0 +1,17 @@
+# Ignore configuration files
+.eslintrc
+babel.config.js
+
+# Ignore test files
+__tests__/
+
+# Ignore data files
+data/*.json
+*.env*
+
+# Ignore binary files
+*.jpg
+*.png
+
+# Ignore temporary files
+logs/

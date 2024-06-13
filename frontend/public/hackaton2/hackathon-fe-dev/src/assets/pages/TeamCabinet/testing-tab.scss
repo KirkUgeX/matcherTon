@@ -1,0 +1,77 @@
+@import "../../variables";
+
+.testing-tab {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+
+    @media screen and (max-width: 1100px) {
+        flex-direction: column;
+    }
+
+    &__column {
+        &:first-child {
+            margin-right: 150px;
+            width: 30%;
+            min-width: 400px;
+            max-width: 450px;
+            @media screen and (max-width: 1250px) {
+                margin-right: 60px;
+            }
+            @media screen and (max-width: 1100px) {
+                width: 100%;
+                margin-bottom: 40px;
+                max-width: 100%;
+            }
+        }
+        &:nth-child(2) {
+            width: 70%;
+            @media screen and (max-width: 1100px) {
+                width: 100%;
+            }
+        }
+        
+    }
+
+    .input {
+        width: 100%;
+        padding-right: 50px;
+    }
+
+    &__form-submit-row {
+        display: flex;
+        justify-content: flex-start;
+        flex-direction: row;
+        margin-top: 24px;
+        color: $white-disabled;
+        font-size: 14px;
+        line-height: 110%;
+        align-items: center;
+        width: 100%;
+        text-align: justify;
+    }
+
+    &__test-button {
+        min-width: fit-content;
+        margin-right: 14px;
+    }
+
+    &__buttons-group {
+        display: flex;
+        flex-direction: row;
+        margin-top: 48px;
+        .button {
+            margin-right: 16px;
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+    }
+
+    &__console {
+        max-width: 100%;
+        width: 100%;
+        height: 464px;
+        max-height: 464px;
+    }
+}

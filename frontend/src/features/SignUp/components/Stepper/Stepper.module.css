@@ -1,0 +1,28 @@
+.stepper {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: 4px;
+}
+
+.step {
+  height: 4px;
+  border-radius: 2px;
+}
+
+.stepPrevious {
+  composes: step;
+  background-color: var(--primary-color);
+}
+
+.stepCurrent {
+  composes: step;
+  background-color: var(--faded-primary-color);
+}
+
+.stepFollowing {
+  composes: step;
+  background-color: lightgrey;
+}

@@ -1,0 +1,17 @@
+@import "../../variables";
+
+.team-line-up {
+    margin-top: 16px;
+
+    &__title {
+        color: $white-semitransparent;
+        font-size: 16px;
+    }
+
+    &__member {
+        font-size: 24px;
+        font-weight: 500;
+        color: $white;
+        margin-top: 8px;
+    }
+}

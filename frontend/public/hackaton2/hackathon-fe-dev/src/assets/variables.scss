@@ -1,0 +1,28 @@
+$white-semitransparent: rgba(255, 255, 255, 0.65);
+$white-disabled: rgba(255, 255, 255, 0.35);
+$white: #ffffff;
+$blue: #2764FF;
+$disabledBlue: #091536;
+$red: #DA1E29;
+$green: #42932E;
+$light-blue: #71a5d8; 
+$blue-transparent: rgba(39, 100, 255, 0.05); // 2764FF - 5%
+$orange-transparent: rgba(255, 117, 39, 0.05); //FF7527 - 5%
+
+$board-cell-bg: rgba(255, 255, 255, 0.05);
+$board-cell-orange-bg: rgba(255, 117, 39, 0.05);
+$board-cell-orange-border: 1.5px solid #ff7527;
+$board-cell-blue-bg:rgba(39, 100, 255, 0.05);
+$board-cell-blue-border: 1.5px solid #2764FF;
+$board-cell-inactive-border: 1px solid rgba(255, 255, 255, 0.2);
+$board-cell-hover-bg: rgba(255, 255, 255, 0.12);
+
+@mixin semi-transparent-border {
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+@mixin semi-transparent-background {
+    background: linear-gradient(133.69deg, rgba(255, 255, 255, 0.025) 0%, rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(16px);
+    @include semi-transparent-border();
+}

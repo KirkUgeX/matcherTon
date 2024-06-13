@@ -1,0 +1,15 @@
+@import "../../variables";
+
+.table-head {
+    width: 100%;
+    padding: 8px 24px;
+    @include semi-transparent-background();
+    border-radius: 4px;
+    color: $white-semitransparent;
+    display: flex;
+    flex-direction: row;
+
+    &__name {
+        padding-right: 5px;
+    }
+}

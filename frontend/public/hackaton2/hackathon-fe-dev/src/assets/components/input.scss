@@ -1,0 +1,50 @@
+@import "../variables";
+
+.input {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    padding: 16px 24px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    font-size: 16px;
+    color: $white;
+    margin-top: 8px;
+
+
+    &::placeholder {
+        //font-size: 16px;
+    }
+
+    &:focus {
+        outline: none;
+    }
+
+    &__container {
+        font-size: 14px;
+        color: $white-semitransparent;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        position: relative;
+        &--successful {
+            .input {
+                background-color: rgba(95, 182, 73, 0.05);
+                border: 2px solid rgba(95, 182, 73, 0.35);
+                color: $green;
+            }
+            &:after {
+                content: "";
+                position: absolute;
+                bottom: 16px;
+                right: 24px;
+                width: 24px;
+                height: 24px;
+                background-color: rgba(95, 182, 73, 0.15);
+                border-radius: 50%;
+                background-image: url("../../../public/images/green_checkmark.svg");
+                background-position: center;
+                background-repeat: no-repeat;
+            }
+        }
+    }
+}

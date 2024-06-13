@@ -1,0 +1,116 @@
+.inputField {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputWrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.inputField input {
+  font-weight: var(--fontWeight-600);
+  border-radius: var(--bd-radius-12);
+  border: 3px solid;
+  border-color: var(--white-color-5);
+  background: var(--white-color-5);
+  padding: var(--space-8) var(--space-12);
+  width: 100%;
+  line-height: 1.35;
+}
+
+.inputField:hover input,
+.inputField input:focus {
+  border-color: var(--brand-color-1);
+  background: var(--white-color);
+  outline: none;
+}
+
+.inputField.inputHasIcon input {
+  padding: var(--space-8) var(--space-16) var(--space-8) var(--space-38);
+}
+
+.icon {
+  position: absolute;
+  left: var(--space-12);
+}
+
+.icon svg {
+  height: 18px;
+  width: 18px;
+}
+
+.label,
+.errorsField,
+.hint {
+  color: var(--dark-color-20);
+  line-height: var(--lineHeight-16);
+  font-size: var(--fontSize-12);
+  margin-left: var(--space-2);
+}
+
+.hint {
+  color: var(--dark-color-50);
+}
+
+.label {
+  margin-bottom: var(--space-4);
+}
+
+.hint,
+.errorsField {
+  margin-top: var(--space-4);
+}
+
+.inputHasError input,
+.inputHasError .inputField:hover input,
+.inputHasError .inputField input:focus {
+  border-color: var(--danger-color-10);
+  background: var(--dagger-color-20);
+  color: var(--danger-color);
+  outline: none;
+}
+
+.inputHasError .label,
+.inputHasError input::placeholder,
+.inputHasError .errorsField {
+  color: var(--danger-color);
+}
+
+.inputHasError .icon path {
+  stroke: var(--danger-color);
+}
+
+.disabled .inputField input {
+  cursor: not-allowed;
+  color: var(--dark-color-50);
+  border-color: transparent;
+  background: var(--light-grey);
+}
+
+.disabled input::placeholder {
+  color: var(--dark-color-50);
+}
+
+input.disabled::placeholder {
+  color: var(--dark-color-50);
+}
+
+input:disabled {
+  color: var(--dark-color-50);
+}
+
+.disabled .inputField:hover input {
+  border-color: transparent;
+  background: var(--light-grey);
+}
+
+.disabled .errorsField {
+  color: var(--dark-color-50);
+}
+
+.disabled .icon path {
+  stroke: var(--dark-color-50);
+}

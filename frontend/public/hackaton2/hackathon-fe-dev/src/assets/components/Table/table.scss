@@ -1,0 +1,14 @@
+@import "../../variables";
+
+.table {
+    color: $white-semitransparent;
+    font-size: 14px;
+    text-align: left;
+
+    &__loader-container {
+        width: 100%;
+        margin-top: 24px;
+        display: flex;
+        justify-content: center;
+    }
+}

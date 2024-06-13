@@ -1,0 +1,23 @@
+.score {
+  background-color: var(--surface-dark);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 12px;
+  min-width: 100px;
+  height: 80px;
+}
+
+.scoreTitle {
+  color: var(--dark-color-50);
+  font-size: var(--fontSize-12);
+  line-height: var(--lineHeight-16);
+}
+
+.scoreValue {
+  color: var(--success-color);
+  font-size: 26px;
+  line-height: var(--lineHeight-40);
+  font-weight: var(--fontWeight-700);
+}

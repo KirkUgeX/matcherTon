@@ -1,0 +1,56 @@
+@import "../../variables";
+
+.table-row {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    &:last-child {
+        border-bottom: none;
+    }
+    &--accent {
+        color: #F5C826;
+    }
+
+    &__number-decoration {
+        width: 12px;
+        //margin-bottom: -px;
+        margin-left: 6px;
+        cursor: default;
+    }
+
+}
+
+.table-cell {
+    word-break: break-word;
+    word-wrap: break-word;
+    &--array {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    &__item {
+        flex-grow: 1;
+        //width: 50%;
+    }
+
+    &__wins {
+        color: $green;
+    }
+
+    &__ties {
+        color: $white;
+    }
+
+    &__losses {
+        color: $red;
+    }
+
+    &__stat {
+        margin-right: 15px;
+    }
+
+    &__boolean-image {
+        width: 14px;
+    }
+}

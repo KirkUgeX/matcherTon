@@ -1,0 +1,6 @@
+.aboutContent {
+  width: 100%;
+  background-color: var(--white-color);
+  border-radius: 8px;
+  padding: 8px;
+}

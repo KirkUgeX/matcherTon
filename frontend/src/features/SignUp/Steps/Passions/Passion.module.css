@@ -1,0 +1,34 @@
+.passionsStep {
+  max-width: 100%;
+}
+.passionsStepLoader {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.passionsList {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  margin-top: var(--space-8);
+  max-width: 100%;
+  gap: var(--space-8);
+}
+
+.chipWrapper {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.chosenChipsList {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  padding-bottom: var(--space-8);
+  gap: var(--space-8);
+  border-bottom: 1px solid var(--border-color);
+}

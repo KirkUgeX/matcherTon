@@ -1,0 +1,39 @@
+.profileSettings {
+  overflow-y: scroll;
+}
+
+.inputWrapper {
+  margin-bottom: var(--space-10);
+}
+
+.inputWrapper:first-child {
+  margin-top: var(--space-10);
+}
+
+.inputWrapper:last-child {
+  margin-bottom: 0;
+}
+
+.buttonWrapper {
+  height: 32px;
+}
+
+.formHeader {
+  display: flex;
+  align-items: center;
+}
+
+.titleWrapper {
+  flex-grow: 1;
+}
+
+.buttonWrapper button {
+  gap: var(--space-6);
+  font-size: var(--fontSize-12);
+  font-weight: var(--fontWeight-700);
+  line-height: var(--lineHeight-16);
+}
+
+.buttonWrapper button[type='button'] {
+  color: var(--primary-color);
+}

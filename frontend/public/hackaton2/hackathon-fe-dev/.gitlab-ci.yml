@@ -1,0 +1,62 @@
+stages:
+  - build
+  - deploy
+
+.build:
+  stage: build
+  image: node:18
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - build
+
+.deploy:
+  stage: deploy
+  image:
+    name: amazon/aws-cli
+    entrypoint: [ "" ]
+  script:
+    - aws --version
+    - aws s3 sync build s3://$S3_BUCKET
+
+build-dev:
+  extends: .build
+  environment:
+    name: development
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "dev"'
+      when: always
+    - when: manual
+
+build-prod:
+  extends: .build
+  environment:
+    name: production
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      when: always
+    - when: manual
+
+deploy-dev:
+  extends: .deploy
+  environment:
+    name: development
+  needs:
+    - build-dev
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "dev"'
+      when: always
+    - when: manual
+
+deploy-prod:
+  extends: .deploy
+  environment:
+    name: production
+  needs:
+    - build-prod
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      when: always
+    - when: manual

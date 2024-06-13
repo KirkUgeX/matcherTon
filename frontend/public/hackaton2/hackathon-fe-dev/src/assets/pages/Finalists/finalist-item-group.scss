@@ -1,0 +1,21 @@
+@import "../../variables";
+
+.finalist-item-group {
+    text-align: left;
+    &__name {
+        color: $white-disabled;
+        font-size: 14px;
+        line-height: 110%;
+        @media screen and (max-width: 1100px) {
+            min-height: 31px;
+        }
+        @media screen and (max-width: 680px) {
+            min-height: auto;
+        }
+    }
+
+    &__value {
+        margin-top: 8px;
+        line-height: 100%;
+    }
+}

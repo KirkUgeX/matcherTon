@@ -1,0 +1,14 @@
+.team-cabinet {
+    text-align: left;
+    &__title {
+        line-height: 1;
+    }
+    &__tab {
+        width: 100%;
+    }
+
+    &__tabs {
+        margin-top: 50px;
+        margin-bottom: 40px;
+    }
+}

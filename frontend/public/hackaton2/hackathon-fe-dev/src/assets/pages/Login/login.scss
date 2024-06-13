@@ -1,0 +1,104 @@
+@import "../../variables";
+
+.login-page {
+    max-height: 100vh;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-image: url("../../../../public/images/background.jpg");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    overflow: hidden;
+
+    &__logo-container {
+        margin-top: 80px;
+    }
+
+    .container {
+        height: 100%;
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+        // margin-top: -130px;
+    }
+
+    &__main-content {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        justify-content: center;
+        align-items: center;
+    }
+
+    &__title {
+        width: 70%;
+        line-height: 1;
+        margin-top: 15%;
+    }
+
+    &__text {
+        font-size: 24px;
+        color: $white;
+        font-weight: 500;
+        margin-top: 24px;
+
+        @media screen and (max-width: 1024px) {
+            font-size: 20px;
+            margin-top: 32px;    
+        }
+    }
+
+    &__countdown {
+        color: $blue;
+        margin-top: 20px;
+    }
+
+    #googleSignIn {
+        margin-top: 40px;
+        width: 217px;
+        display: flex;
+        justify-content: center;
+    }
+
+    &__blue-arrows {
+        position: absolute;
+        bottom: -60px;
+        left: -60px;
+        transform: rotate(55deg);
+        width: 450px;
+        @media screen and (max-width: 1000px) {
+            width: 350px;
+        }
+    }
+
+    &__orange-arrows {
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        transform: rotate(-125deg);
+        width: 450px;
+        @media screen and (max-width: 1000px) {
+            width: 350px;
+        }
+    }
+
+    .language-switcher {
+        margin-top: 20px;
+    }
+}
+
+@-moz-document url-prefix() {
+    .login-page__countdown {
+        margin: 45px;
+    }
+}

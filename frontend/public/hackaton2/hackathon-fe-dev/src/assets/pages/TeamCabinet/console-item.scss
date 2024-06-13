@@ -1,0 +1,62 @@
+@import "../../variables";
+
+.console-item {
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: row;
+
+    &__time {
+        color: $white-disabled;
+        font-size: 14px;
+        line-height: 110%;
+        margin-right: 16px;
+    }
+
+    &--error {
+        background-color: rgba(201, 51, 60, 0.15);
+        color: $red;
+    }
+
+    &--warning {
+        background-color: rgba(201, 51, 60, 0.15);
+        color: #f5c826;
+    }
+
+    &--info {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: $white;
+    }
+
+    &--success {
+        background-color: rgba(66, 147, 46, 0.15);
+        color: #42932e;
+    }
+
+    &--loader {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: $white;
+    }
+
+    &__loader {
+        display: flex;
+        align-items: center;
+
+        span {
+            margin-left: 10px;
+        }
+
+        .loader {
+            height: 20px;
+            width: 20px;
+
+            &::before {
+                left: -2px;
+                top: -2px;
+                border-top: 2px solid #2764ff;
+                border-left: 2px solid transparent;
+                border-bottom: 2px solid transparent;
+                border-right: 2px solid transparent;
+            }
+        }
+    }
+}

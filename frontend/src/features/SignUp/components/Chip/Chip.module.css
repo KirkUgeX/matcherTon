@@ -1,0 +1,27 @@
+.chip {
+  padding: 8px;
+  border-radius: 20px;
+  border: 1px solid var(--light-grey);
+  background-color: var(--white-color);
+  font-size: 12px;
+  display: inline-block;
+  line-height: 16px;
+}
+
+.chip--chosen {
+  composes: chip;
+  border: 1px solid #e9e8fd;
+  background-color: #f3f2fe;
+  display: flex;
+  align-items: center;
+}
+
+.chipIcon {
+  margin-left: 8px;
+}
+
+.chip--disabled {
+  composes: chip;
+  background-color: var(--light-grey);
+  color: var(--dark-color-50)
+}

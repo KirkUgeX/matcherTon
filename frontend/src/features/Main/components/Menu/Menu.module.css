@@ -1,0 +1,69 @@
+.menu {
+  width: 100%;
+  background-color: var(--white-color);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: row;
+  padding: 15px 0;
+  justify-content: space-around;
+}
+
+.itemsWrapper {
+  width: 80%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.menuItem {
+  cursor: pointer;
+  position: relative;
+}
+
+.menuItemActive svg path {
+  stroke: var(--primary-color);
+}
+
+.menuItemActive svg circle {
+  stroke: var(--primary-color);
+}
+.menuItemActive svg ellipse {
+  stroke: var(--faded-primary-color);
+}
+
+.chatWithNewMessage:before {
+  height: 12px;
+  width: 12px;
+  content: '';
+  background-color: var(--danger-color);
+  border: 2px solid var(--faded-primary-color);
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.menuItemIcon {
+  z-index: 1;
+  width: 35px;
+  height: 35px;
+  position: relative;
+}
+
+@media screen and (max-width: 700px) {
+  .itemsWrapper {
+    width: 100%;
+    gap: 66px;
+    align-items: center;
+  }
+
+  .menu {
+    padding: var(--space-8) 0;
+  }
+
+  .menuItem svg {
+    width: 28px;
+    height: 28px;
+  }
+}

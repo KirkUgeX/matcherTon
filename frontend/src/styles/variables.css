@@ -1,0 +1,73 @@
+:root {
+  --primary-font: 'Manrope', sans-serif;
+
+  --border-color: #ececed;
+
+  --white-color: #fff;
+  --white-color-5: #f3f3f4;
+  --white-color-10: #f8f8f8;
+
+  --primary-color: #6f58f6;
+  --faded-primary-color: #b6b1f9;
+
+  --dark-color: #000;
+  --dark-color-10: #0000001f;
+  --dark-color-20: #494656;
+  --dark-color-50: #b3b1b8;
+
+  --surface-dark: #2d293b;
+
+  --dark-grey: #8c8a94;
+
+  --light-grey: #e2e2e4;
+
+  --brand-color-1: #dddcff;
+
+  --danger-color: #f03d3d;
+  --danger-color-10: #ff7373;
+  --dagger-color-20: #ffe0e0;
+  --success-color: #0ed065;
+  --success-color-10: #2ae77f;
+
+  --fontWeight-500: 500;
+  --fontWeight-600: 600;
+  --fontWeight-700: 700;
+  --fontWeight-800: 800;
+
+  --fontSize-12: 12px;
+  --fontSize-14: 14px;
+  --fontSize-16: 16px;
+  --fontSize-20: 20px;
+  --fontSize-26: 26px;
+  --fontSize-28: 28px;
+  --fontSize-30: 30px;
+  --fontSize-32: 32px;
+
+  --lineHeight-16: 16px;
+  --lineHeight-20: 20px;
+  --lineHeight-24: 24px;
+  --lineHeight-32: 32px;
+  --lineHeight-40: 40px;
+
+  --bd-radius-12: 12px;
+  --bd-radius-20: 20px;
+  --bd-radius-50: 50px;
+  --bd-radius-100: 100px;
+
+  --space-2: 2px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-26: 26px;
+  --space-28: 28px;
+  --space-32: 32px;
+  --space-30: 30px;
+  --space-38: 38px;
+}

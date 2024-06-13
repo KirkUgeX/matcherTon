@@ -1,0 +1,11 @@
+.stepLayout {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: min-content 1fr 40px;
+  max-width: 100%;
+}
+
+.title {
+  margin-bottom: 32px;
+  text-align: center;
+}

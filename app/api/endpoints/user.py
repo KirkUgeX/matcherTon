@@ -8,7 +8,11 @@ from app.utils import recommendation_sys as rs
 from app.utils.html import escape_html
 from app.api.endpoints.auth import get_current_user, get_current_holder
 from app.utils.score import scoreBackground, scoreBackground_test
-from app.messenger.msg_functions import create_chat, get_all_messages, send_message, get_all_chats
+from app.messenger.msg_functions import create_chat, get_all_messages, get_all_chats
+from slowapi.errors import RateLimitExceeded
+from starlette.responses import PlainTextResponse
+from starlette.status import HTTP_429_TOO_MANY_REQUESTS
+
 
 router = APIRouter()
 
@@ -233,7 +237,6 @@ async def get_chat_history(request: Request, user: GetAllMessages):
     return await get_all_messages(user_id=user.user_id, chat_id=user.chat_id)
 
 
-@router.post("/insert-new-message")
-@limiter.limit("10000/minute")
-async def insert_new_message(request: Request, user: Message):
-    return await send_message(user)
+@router.exception_handler(RateLimitExceeded)
+async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    return PlainTextResponse(str(exc), status_code=HTTP_429_TOO_MANY_REQUESTS)

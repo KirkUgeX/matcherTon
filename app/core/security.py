@@ -10,12 +10,16 @@ from fastapi import HTTPException
 import asyncio
 import os
 import base64
+from fastapi.security import OAuth2
+from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
+from fastapi.openapi.models import OAuthFlowPassword as OAuthFlowPasswordModel
+from fastapi import Request, status
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 password = os.getenv('CHAT_CRYPT_PAS')
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+async def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -62,6 +66,20 @@ class AESCipher(object):
     def _unpad(self, s):
         # Deleting an add-on after transcription
         return s[:-s[-1]]
+
+
+class ProofBearer(OAuth2):
+    def __init__(self, tokenUrl: str):
+        self.model = OAuthFlowsModel(password=OAuthFlowPasswordModel(tokenUrl=tokenUrl))
+        super().__init__(flows=self.model)
+
+    async def __call__(self, request: Request) -> str:
+        auth_header: str = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Not authenticated"
+            )
+        return auth_header.split(" ")[1]
 
 
 async def encrypter(data, password=password):

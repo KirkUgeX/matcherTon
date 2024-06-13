@@ -154,3 +154,8 @@ class delMatch(BaseModel):
 
 class whitelistreq(BaseModel):
     email: str
+
+
+class AddNFTS(BaseModel):
+    address: str
+    picked_nfts_list: list[NFT]

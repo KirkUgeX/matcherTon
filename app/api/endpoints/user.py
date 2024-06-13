@@ -13,7 +13,6 @@ from slowapi.errors import RateLimitExceeded
 from starlette.responses import PlainTextResponse
 from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 
-
 router = APIRouter()
 
 
@@ -71,6 +70,18 @@ async def request_getAllUserInfo(request: Request, user: user_model.getAllUserIn
             raise HTTPException(status_code=500, detail=f"{str(info)}")
 
     return info
+
+
+@router.get("/getpassions")
+async def get_passions():
+    passions_list = ["Developer", "Rust", "Solidity", "Web3", "Web2", "Market Analysis", "On-chain Analysis",
+                     "Tokenomics Analysis", "Digital Art", "3D Modeling", "Yield Farmer", "DeFi", "Protocol Research",
+                     "DAO", "Security Audits", "Bloggs", "SMM", "Edu SMM", "Influencer", "Trader", "NFT Trading",
+                     "Solana", "ETH", "BTC", "Market Making", "Risk management", "Biotech", "EdTech", "GameFi",
+                     "SocialFi", "Product management", "Project management", "Startups", "Real Estate Investments",
+                     "VC", "Angel Investments", "GameDev", "Marketing", "SEO", "ML/AI", "Data Science",
+                     "Computer Vision", "LLM/GPT/NLP", "VR/AR", "Graphic Designer", "UX/UI"]
+    return {"passions": passions_list}
 
 
 @router.post("/requestGetMinUserInfo")
@@ -235,6 +246,20 @@ async def chat_creator(request: Request, chat_model: ChatCreation):
 @limiter.limit("10000/minute")
 async def get_chat_history(request: Request, user: GetAllMessages):
     return await get_all_messages(user_id=user.user_id, chat_id=user.chat_id)
+
+
+@router.post("/requestAddNFTS")
+@limiter.limit("1000/minute")
+async def AddNFTS(request: Request, user: user_model.AddNFTS = Body(...),
+                  current_user: TokenData = Depends(get_current_user)) -> user_model.responseSuccess:
+    try:
+        result = await uf.get_nfts(escape_html(user.address), escape_html(user.picked_nfts_list))
+        if isinstance(result, str):
+            if "Error" in result:
+                raise HTTPException(status_code=500, detail=f"{result}")
+        return {"response": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error when adding nft, requestAddNFTS :{str(e)}")
 
 
 @router.exception_handler(RateLimitExceeded)

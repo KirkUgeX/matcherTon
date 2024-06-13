@@ -467,3 +467,25 @@ async def wl_access(email):
         if "Error" in data:
             return data
     return data
+
+
+async def get_nfts(user_id, picked_nfts_list):
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+
+    try:
+        nfts = json.dumps(picked_nfts_list)
+        await db.nfts_change(user_id, nfts)
+    except psycopg2.DatabaseError as db_err:
+        print(f"Opensea get_nfts An Error occurred with the database: {db_err}")
+        return f"Opensea get_nfts An Error occurred with the database: {db_err}"
+    except json.JSONDecodeError as json_err:
+        print(f"Opensea get_nfts JSON decoding Error occurred: {json_err}")
+        return f"Opensea get_nfts JSON decoding Error occurred: {json_err}"
+    except Exception as e:
+        print(f"Opensea get_nfts An unexpected Error occurred: {e}")
+        return f"Opensea get_nfts An unexpected Error occurred: {e}"

@@ -38,7 +38,7 @@ export const Profile = () => {
       <div className={styles.profileInner}>
         <div className={styles.leftColumn}>
           <div className={styles.profileCardWrapper}>
-            <ProfileCard isEditing={isEditing} />
+            <ProfileCard />
           </div>
           {!isMobile && (
             <>

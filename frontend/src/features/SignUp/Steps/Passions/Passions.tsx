@@ -15,7 +15,7 @@ interface PassionsProps {
   onBackButtonClick: () => void
   onSuccessfulSubmit: (chosenPassions: string[]) => void | Promise<void>
   isSubmitted?: boolean
-  showMainButton: boolean
+  showMainButton?: boolean
 }
 export const Passions: React.FC<PassionsProps> = ({
   initialPassions = [],

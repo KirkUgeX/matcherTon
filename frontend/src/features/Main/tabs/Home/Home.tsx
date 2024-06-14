@@ -20,8 +20,6 @@ import {
 import { useAppSelector } from '../../../../hooks/redux.ts'
 import { Loader } from './components/Loader/Loader.tsx'
 import { useLogout } from '../../../../hooks/useLogout.ts'
-import { AvatarPlaceholder } from '../../../../constants/AvatarPlaceholder.ts'
-import {Username} from "../../../SignUp/Steps/Username/Username.tsx";
 
 interface HomeProps {}
 

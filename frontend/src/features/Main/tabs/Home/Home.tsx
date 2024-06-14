@@ -21,6 +21,7 @@ import { useAppSelector } from '../../../../hooks/redux.ts'
 import { Loader } from './components/Loader/Loader.tsx'
 import { useLogout } from '../../../../hooks/useLogout.ts'
 import { AvatarPlaceholder } from '../../../../constants/AvatarPlaceholder.ts'
+import {Username} from "../../../SignUp/Steps/Username/Username.tsx";
 
 interface HomeProps {}
 
@@ -29,7 +30,6 @@ export const Home: React.FC<HomeProps> = () => {
   const [showStopper, setShowStopper] = useState<boolean>(false)
   const user = useAppSelector((state) => state.user)
   const { checkError } = useLogout()
-  console.log('user', user)
   useEffect(() => {
     getNextUser()
   }, [])
@@ -92,11 +92,7 @@ export const Home: React.FC<HomeProps> = () => {
               alt="avatar"
             />
           ) : (
-            <img
-              className={styles.avatarImage}
-              src={AvatarPlaceholder}
-              alt="avatar"
-            />
+            <div className={styles.avatarPlaceholder}><span className={styles.avatarPlaceholderText}>{currentUser.nickname}</span></div>
           )}
         </div>
         <div className={styles.buttonsGroups}>

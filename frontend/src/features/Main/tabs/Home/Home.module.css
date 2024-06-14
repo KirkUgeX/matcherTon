@@ -48,6 +48,32 @@
   height: 100%;
 }
 
+.avatarPlaceholder {
+  width: 312px;
+  max-width: 100%;
+  background-color: var(--primary-color);
+  height: 312px;
+  max-width: 100%;
+  border-radius: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--white-color);
+  font-size: var(--fontSize-20);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: var(--space-12)
+}
+
+.avatarPlaceholderText {
+  text-align: center;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .buttonsGroups {
   display: flex;
   flex-direction: row;

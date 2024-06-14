@@ -2,15 +2,33 @@
   background: var(--white-color-5);
   border-radius: var(--bd-radius-12);
   padding: var(--space-12);
-  /*display: flex;*/
-  /*align-items: center;*/
   display: grid;
   grid-template-columns: 64px 1fr fit-content(100%);
   justify-content: center;
   align-items: center;
-  /*max-width: 100%;*/
-  /*overflow-x: hidden;*/
   gap: 18px;
+}
+
+.imagePlaceholder {
+  width: 64px;
+  height: 64px;
+  background-color: var(--primary-color);
+  border-radius: var(--bd-radius-12);
+  color: var(--white-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: var(--fontSize-12);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.imagePlaceholderText {
+  max-width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .profileImg {

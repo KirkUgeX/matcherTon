@@ -29,30 +29,12 @@ export const Main: React.FC<MainProps> = () => {
   const { checkError } = useLogout()
 
   useEffect(() => {
-    openSocket()
-    example()
+    // openSocket()
     return () => {
       socket && socket.close(4999)
     }
   }, [])
 
-  const example = async () => {
-    const user = WebApp.initDataUnsafe.user
-    console.log('User', user)
-    const a = await axios.post(
-      'https://api.telegram.org/bot7205077582:AAFN0ng0fNA0X2NqeAcw1mSQnBbkyKJkCAM/getUserProfilePhotos',
-      {
-        user_id: user.id,
-      }
-    )
-    console.log('Response', a)
-    // const bot = new TelegramBot(
-    //   '7205077582:AAFN0ng0fNA0X2NqeAcw1mSQnBbkyKJkCAM'
-    // )
-    // const user = await bot.getMe()
-    // console.log(user.id)
-    // console.log(user)
-  }
 
   const openSocket = () => {
     const { uuid } = getDecodedJwt()

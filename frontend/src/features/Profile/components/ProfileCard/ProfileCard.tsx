@@ -6,9 +6,7 @@ import styles from './ProfileCard.module.css'
 import { useAppSelector } from '../../../../hooks/redux'
 import { shortenWalletAddress } from '../../../../utils/shortenWalletAddress'
 import { AvatarPlaceholder } from '../../../../constants/AvatarPlaceholder.ts'
-import { Avatar } from '../../../SignUp/Steps/Avatar/Avatar.tsx'
-import { AvatarChoosingWrapper } from '../AvatarChoosingWrapper/AvatarChoosingWrapper.tsx'
-import { useTonAddress, useTonWallet } from '@tonconnect/ui-react'
+import { useTonAddress } from '@tonconnect/ui-react'
 
 interface ProfileCardProps {
   isEditing: boolean
@@ -31,7 +29,9 @@ export const ProfileCard = () => {
   return (
     <div className={styles.profileCard}>
       <div className={styles.profileImg}>
-        <img src={getImgSrc()} alt="profile image" />
+        <div className={styles.imagePlaceholder}><span className={styles.imagePlaceholderText}>{nickname}</span></div>
+        {/*<img src={getImgSrc()} alt="profile image"/>*/}
+
         {/*{isEditing ? (*/}
         {/*  <div*/}
         {/*    className={styles.profileImgOverlay}*/}

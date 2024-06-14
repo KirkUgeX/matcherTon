@@ -32,11 +32,9 @@ export const SignUp = () => {
   const signUp = useAppSelector((state) => state.signUp)
   const [currentStep, setCurrentStep] = useState(1)
   const [tonConnectUI] = useTonConnectUI()
-  // const address = useTonAddress()
   const wallet = useTonWallet()
   const navigate = useNavigate()
   const { checkError } = useLogout()
-  console.log(wallet)
 
   const goToTheNextStep = () => {
     setCurrentStep((prevState) => prevState + 1)
@@ -47,9 +45,7 @@ export const SignUp = () => {
   }
 
   const onLastStepSubmit = async (nfts: Nft[]) => {
-    const telegramUser = WebApp.initDataUnsafe.user
     const { work, username, description, socials, tagsSphere } = signUp
-    console.log('telegramUser', telegramUser)
     const newUser = {
       profileNickname: username,
       address: wallet?.account.address,
@@ -64,11 +60,10 @@ export const SignUp = () => {
         image_url: nft.src,
         opensea_url: nft.openSeaUrl,
       })),
-      telegramUserId: telegramUser?.id || 0,
       description: description,
     }
-    console.log('newUser', newUser)
     try {
+      console.log(newUser);
       await createNewUser(newUser)
       const proof = getProof()
       if (wallet?.account && proof) {
@@ -82,7 +77,9 @@ export const SignUp = () => {
         navigate('/app')
       }
     } catch (e: any) {
+      console.log(e.response);
       if (e?.response?.data?.detail.includes('409')) {
+        console.log(e.response.data);
         await tonConnectUI.disconnect()
         clearProof()
         clearJwt()

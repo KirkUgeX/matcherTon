@@ -4,7 +4,6 @@ import { Provider } from 'react-redux'
 import { store } from './store/store.ts'
 import App from './App.tsx'
 import './index.css'
-import { Web3ModalProvider } from './components/connect.tsx'
 import { BrowserRouter } from 'react-router-dom'
 
 import WebApp from '@twa-dev/sdk'
@@ -18,9 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
     <BrowserRouter>
       <TonConnectUIProvider manifestUrl={manifestURL}>
-        <Web3ModalProvider>
-          <App />
-        </Web3ModalProvider>
+        <App />
       </TonConnectUIProvider>
     </BrowserRouter>
   </Provider>

@@ -115,7 +115,6 @@ export const Login = () => {
       setJwt(res.data.access_token)
       const userId = (jwtDecode(res.data.access_token) as any).user_id
       dispatch(setUserId(userId))
-      WebApp.showAlert('beforeRegistrationCheck')
       await checkForRegistration(userId)
     } catch (e) {
       // alert(e: AxiosError)
@@ -131,13 +130,11 @@ export const Login = () => {
     if (userId) {
       try {
         const res = await requestMaxUserInfo(userId)
-        WebApp.showAlert('afterRegistrationCheck')
         console.log('MaxUser', res)
         dispatch(setUserInfo(res.data))
         clearProof()
         return redirectToMain()
       } catch (e) {
-        WebApp.showAlert('errorRegistrationCheck')
         ShowNotify(
           'An error occurred during the connection. Please try again.',
           'error'

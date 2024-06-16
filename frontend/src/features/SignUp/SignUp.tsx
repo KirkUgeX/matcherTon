@@ -63,7 +63,6 @@ export const SignUp = () => {
       description: description,
     }
     try {
-      console.log(newUser);
       await createNewUser(newUser)
       const proof = getProof()
       if (wallet?.account && proof) {

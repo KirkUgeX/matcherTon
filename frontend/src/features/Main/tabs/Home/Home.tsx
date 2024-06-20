@@ -27,6 +27,8 @@ export const Home: React.FC<HomeProps> = () => {
   const [currentUser, setCurrentUser] = useState<any>(null)
   const [showStopper, setShowStopper] = useState<boolean>(false)
   const user = useAppSelector((state) => state.user)
+  const [showOnLikeBlock, setShowOnLikeBlock] = useState(false)
+  const [showOnDislikeBlock, setShowOnDislikeBlock] = useState(false)
   const { checkError } = useLogout()
   useEffect(() => {
     getNextUser()
@@ -41,6 +43,8 @@ export const Home: React.FC<HomeProps> = () => {
       }
       const userRes = await requestMaxUserInfo(nextUserId)
       setCurrentUser({ ...userRes.data, userId: nextUserId })
+      setShowOnLikeBlock(false)
+      setShowOnDislikeBlock(false)
     } catch (e) {
       await checkError(e)
     }
@@ -48,6 +52,7 @@ export const Home: React.FC<HomeProps> = () => {
 
   const onDislike = async () => {
     try {
+      setShowOnDislikeBlock(true)
       await requestReaction(user.userId, currentUser.userId, 'dislike')
       await getNextUser()
     } catch (e) {
@@ -57,6 +62,7 @@ export const Home: React.FC<HomeProps> = () => {
 
   const onLike = async () => {
     try {
+      setShowOnLikeBlock(true);
       await requestReaction(user.userId, currentUser.userId, 'like')
       await getNextUser()
     } catch (e) {
@@ -81,6 +87,12 @@ export const Home: React.FC<HomeProps> = () => {
 
   return (
     <div className={styles.homeTab}>
+      <div style={{display: showOnLikeBlock ? "flex" : 'none'}} className={styles.onReactionAnimationBlockLike}>
+        {showOnLikeBlock ? <div className={styles.reactionIconContainer}><LikeIcon/></div> : null}
+      </div>
+      <div style={{display: showOnDislikeBlock ? "flex" : 'none'}} className={styles.onReactionAnimationBlockDislike}>
+        {showOnDislikeBlock ? <div className={styles.reactionIconContainer}><DislikeIcon/></div> : null}
+      </div>
       <div className={styles.imageSide}>
         <div className={styles.avatar}>
           {currentUser.nfts.length ? (
@@ -90,18 +102,20 @@ export const Home: React.FC<HomeProps> = () => {
               alt="avatar"
             />
           ) : (
-            <div className={styles.avatarPlaceholder}><span className={styles.avatarPlaceholderText}>{currentUser.nickname}</span></div>
+            <div className={styles.avatarPlaceholder}><span
+              className={styles.avatarPlaceholderText}>{currentUser.nickname}</span></div>
           )}
         </div>
         <div className={styles.buttonsGroups}>
           <div className={styles.dislikeButton}>
-            <Button variant={ButtonVariant.Secondary} onClick={onDislike}>
-              <DislikeIcon />
+            <Button disabled={showOnLikeBlock || showOnDislikeBlock} variant={ButtonVariant.Secondary}
+                    onClick={onDislike}>
+              <DislikeIcon/>
             </Button>
           </div>
           <div className={styles.likeButton}>
-            <Button variant={ButtonVariant.Primary} onClick={onLike}>
-              <LikeIcon /> Like
+            <Button disabled={showOnLikeBlock || showOnDislikeBlock} variant={ButtonVariant.Primary} onClick={onLike}>
+              <LikeIcon/> Like
             </Button>
           </div>
         </div>
@@ -111,7 +125,7 @@ export const Home: React.FC<HomeProps> = () => {
           <div className={styles.userbase}>
             <div className={styles.userName}>{currentUser.nickname}</div>
             <div className={styles.userPosition}>
-              <CaseIcon className={styles.userPositionIcon} />
+              <CaseIcon className={styles.userPositionIcon}/>
               <div className={styles.userPositionName}>
                 {currentUser.work.position}
               </div>
@@ -121,10 +135,10 @@ export const Home: React.FC<HomeProps> = () => {
               </div>
             </div>
           </div>
-          <Score score={currentUser.score} />
+          <Score score={currentUser.score}/>
         </div>
-        <About text={currentUser.description} />
-        <Passions passions={currentUser.tagsSphere} />
+        <About text={currentUser.description}/>
+        <Passions passions={currentUser.tagsSphere}/>
         <Socials
           x={currentUser.socialLinks.x}
           linkedin={currentUser.socialLinks.linkedin}

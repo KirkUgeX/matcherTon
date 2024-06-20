@@ -61,6 +61,7 @@ export const ChatList = () => {
         (prevState) =>
           prevState?.filter((match) => match.user_id !== id) || null
       )
+      await getChats();
     } catch (e) {
       await checkError(e)
     }

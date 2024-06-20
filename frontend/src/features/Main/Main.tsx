@@ -29,7 +29,7 @@ export const Main: React.FC<MainProps> = () => {
   const { checkError } = useLogout()
 
   useEffect(() => {
-    // openSocket()
+    openSocket()
     return () => {
       socket && socket.close(4999)
     }

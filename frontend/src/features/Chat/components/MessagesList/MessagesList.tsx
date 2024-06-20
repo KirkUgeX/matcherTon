@@ -33,7 +33,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ messages }) => {
       if (message.from_user === userId) {
         return (
           <Message
-            key={message.id}
+            key={message.id || message.created_at}
             type={MessageType.own}
             text={message.content}
             date={message.created_at}
@@ -42,7 +42,7 @@ export const MessagesList: React.FC<MessagesListProps> = ({ messages }) => {
       }
       return (
         <Message
-          key={message.id}
+          key={message.id || message.created_at}
           type={MessageType.guest}
           text={message.content}
           date={message.created_at}

@@ -1,7 +1,7 @@
 {
-  "url": "https://a9a1-89-135-32-37.ngrok-free.app",
+  "url": "https://ton.matcher.fun",
   "name": "Matcher",
-  "iconUrl": "https://ton-connect.github.io/demo-dapp-with-react-ui/apple-touch-icon.png",
+  "iconUrl": "https://ton.matcher.fun/Matcher.svg",
   "termsOfUseUrl": "https://ton-connect.github.io/demo-dapp-with-react-ui/terms-of-use.txt",
   "privacyPolicyUrl": "https://ton-connect.github.io/demo-dapp-with-react-ui/privacy-policy.txt"
 }

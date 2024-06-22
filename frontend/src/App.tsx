@@ -10,6 +10,7 @@ import {useNavigate} from 'react-router-dom'
 import {isTokenInvalid} from './utils/checkTokenForValidity.ts'
 import {routes} from './routes/routes.ts'
 import {AppTab} from "./features/Main/constants.ts";
+import WebApp from "@twa-dev/sdk";
 
 const App: React.FC = () => {
   const dispatch = useDispatch()
@@ -24,7 +25,6 @@ const App: React.FC = () => {
     const jwtPayload = getDecodedJwt()
     const isInvalid = isTokenInvalid(jwtPayload)
     if (isInvalid || !jwtPayload.user_id) return navigate(routes.login.toRoute);
-
     try {
       dispatch(setUserId(jwtPayload.user_id))
       const { data } = await requestMaxUserInfo(jwtPayload.user_id)

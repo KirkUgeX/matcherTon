@@ -13,6 +13,7 @@ import styles from './Socials.module.css'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useAppDispatch, useAppSelector } from '../../../../hooks/redux.ts'
 import { setSocials } from '../../../../store/slices/signUp.ts'
+import WebApp from "@twa-dev/sdk";
 
 const SocialsSchema = object().shape({
   x: string().optional(),
@@ -37,12 +38,13 @@ export const Socials: React.FC<SocialsProps> = ({
 }) => {
   const { socials } = useAppSelector((state) => state.signUp)
   const dispatch = useAppDispatch()
+  const userInfo = WebApp.initDataUnsafe;
   const formMethods = useForm({
     resolver: yupResolver(SocialsSchema),
     defaultValues: {
       x: socials.x,
       linkedin: socials.linkedin,
-      telegram: socials.telegram,
+      telegram: userInfo?.user?.username ? `@${userInfo.user.username}` : '',
     },
   })
 

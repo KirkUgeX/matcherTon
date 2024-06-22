@@ -9,6 +9,7 @@ import { setUsername } from '../../../../store/slices/signUp.ts'
 import { object, string } from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useLogout } from '../../../../hooks/useLogout.ts'
+import WebApp from "@twa-dev/sdk";
 
 interface UsernameProps {
   onSuccessfulSubmit: () => void | Promise<void>
@@ -25,9 +26,10 @@ export const Username: React.FC<UsernameProps> = ({ onSuccessfulSubmit }) => {
   const { username } = useAppSelector((state) => state.signUp)
   const dispatch = useAppDispatch()
   const { checkError } = useLogout()
+  const userInfo = WebApp.initDataUnsafe
   const formMethods = useForm({
     resolver: yupResolver(PositionSchema),
-    defaultValues: { username },
+    defaultValues: { username: userInfo?.user?.username || '' },
     mode: 'onChange',
   })
 

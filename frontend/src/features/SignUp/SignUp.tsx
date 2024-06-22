@@ -68,7 +68,7 @@ export const SignUp = () => {
     try {
       if (userInfo?.user?.id) {
         const imageRes = await requestUserTgImage(userInfo.user.id);
-        newUser.avatar = imageRes.data.img;
+        newUser.avatar = imageRes?.data?.img || null;
       }
       await createNewUser(newUser)
       const proof = getProof()

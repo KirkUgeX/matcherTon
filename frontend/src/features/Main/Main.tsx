@@ -10,8 +10,6 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux.ts'
 import { setNewMessageChat } from '../../store/slices/chats.ts'
 import { useLogout } from '../../hooks/useLogout.ts'
 import { routes } from '../../routes/routes.ts'
-import WebApp from "@twa-dev/sdk";
-import axios from "axios";
 
 interface MainProps {}
 
@@ -26,7 +24,6 @@ export const Main: React.FC<MainProps> = () => {
   const { newMessage } = useAppSelector((state) => state.chats)
   const { userId } = useAppSelector((state) => state.user)
   const { checkError } = useLogout()
-  const [imageSrc, setImageSrc] = useState('');
 
   useEffect(() => {
     openSocket()

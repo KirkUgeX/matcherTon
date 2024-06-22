@@ -28,21 +28,6 @@ export const login = (account: Account, proof: TonProof) => {
 }
 
 export const loadNFTs = (address: string, chain: string) => {
-  // const options = {
-  //   method: 'GET',
-  //   headers: {
-  //     Accept: 'application/json',
-  //     // Do not expose your API key in the browser
-  //     'X-API-KEY': '8a6a06fa96ed4cac91fa1e1dac0c7f66',
-  //   },
-  // }
-  // fetch(
-  //   'https://testnets-api.opensea.io/api/v2/chain/sepolia/account/0x375C60b909a09fCCd783c57dd1185583ce707700/nfts',
-  //   options
-  // )
-  //   .then((response) => response.json())
-  //   .then((response) => console.log(response))
-  //   .catch((err) => console.error(err))
   const token = getJwt()
   return axios.post(
     `${serviceUrl}/requestNFTgetALL`,

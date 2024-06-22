@@ -15,7 +15,7 @@ import { Socials } from './components/Socials/Socials.tsx'
 import {
   requestMaxUserInfo,
   requestNextUser,
-  requestReaction,
+  requestReaction, requestUserTgImage,
 } from '../../../../services/main.ts'
 import { useAppSelector } from '../../../../hooks/redux.ts'
 import { Loader } from './components/Loader/Loader.tsx'
@@ -70,10 +70,28 @@ export const Home: React.FC<HomeProps> = () => {
     }
   }
 
+  const getImage = () => {
+    if (currentUser?.nfts[0]?.image_url) {
+      return (
+        <img
+          className={styles.avatarImage}
+          src={currentUser.nfts[0].image_url}
+          alt="avatar"
+        />
+      )
+    }
+    if (currentUser.avatar) {
+      return <img src={`data:image/jpg;base64,${currentUser.avatar}`} alt="Avatar"/>
+    }
+    return (
+      <div className={styles.avatarPlaceholder}><span
+        className={styles.avatarPlaceholderText}>{currentUser.nickname}</span></div>
+    )
+  }
   if (showStopper) {
     return (
       <div className={styles.stopper}>
-        <BigStarIcon />
+        <BigStarIcon/>
         <div>That's all for today!</div>
       </div>
     )
@@ -95,16 +113,7 @@ export const Home: React.FC<HomeProps> = () => {
       </div>
       <div className={styles.imageSide}>
         <div className={styles.avatar}>
-          {currentUser.nfts.length ? (
-            <img
-              className={styles.avatarImage}
-              src={currentUser.nfts[0].image_url}
-              alt="avatar"
-            />
-          ) : (
-            <div className={styles.avatarPlaceholder}><span
-              className={styles.avatarPlaceholderText}>{currentUser.nickname}</span></div>
-          )}
+          {getImage()}
         </div>
         <div className={styles.buttonsGroups}>
           <div className={styles.dislikeButton}>

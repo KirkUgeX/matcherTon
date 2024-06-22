@@ -27,7 +27,6 @@ export const Avatar: React.FC<AvatarProps> = ({
   const onInit = async () => {
     if (wallet?.account.address) {
       try {
-        console.log(wallet)
         const res = await loadNFTs(
           wallet?.account.address || '',
           wallet?.account.chain || ''

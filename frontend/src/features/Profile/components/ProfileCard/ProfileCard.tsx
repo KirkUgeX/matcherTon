@@ -13,15 +13,21 @@ interface ProfileCardProps {
 }
 
 export const ProfileCard = () => {
-  const { nickname, nfts, points } = useAppSelector((state) => state.user)
+  const { nickname, nfts, points, avatar } = useAppSelector((state) => state.user)
 
   const address = useTonAddress()
 
-  const getImgSrc = () => {
+  const getImg = () => {
+
     if (nfts?.[0]?.image_url) {
       return nfts[0].image_url
     }
-    return AvatarPlaceholder
+    if (avatar) {
+      return <img src={`data:image/jpg;base64,${avatar}`} alt="Avatar"/>
+    }
+    return (
+      <div className={styles.imagePlaceholder}><span className={styles.imagePlaceholderText}>{nickname}</span></div>
+    )
   }
 
   // const changeProfileImg = () => {}
@@ -29,8 +35,7 @@ export const ProfileCard = () => {
   return (
     <div className={styles.profileCard}>
       <div className={styles.profileImg}>
-        <div className={styles.imagePlaceholder}><span className={styles.imagePlaceholderText}>{nickname}</span></div>
-        {/*<img src={getImgSrc()} alt="profile image"/>*/}
+        {getImg()}
 
         {/*{isEditing ? (*/}
         {/*  <div*/}

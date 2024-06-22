@@ -28,11 +28,10 @@ const App: React.FC = () => {
     try {
       dispatch(setUserId(jwtPayload.user_id))
       const { data } = await requestMaxUserInfo(jwtPayload.user_id)
-      console.log(data);
       dispatch(setUserInfo(data))
       return navigate(routes.main.toRoute(AppTab.Home));
     } catch (e: any) {
-      if (e.response.data.detail === 'Could not validate credentials') {
+      if (e?.response?.data?.detail === 'Could not validate credentials') {
         return navigate(routes.login.toRoute)
       }
     }

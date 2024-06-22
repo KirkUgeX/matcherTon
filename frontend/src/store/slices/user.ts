@@ -21,6 +21,8 @@ export interface UserState {
   achievements: string[]
   description: string
   points: number
+  avatar: string
+  tg_userid: number
 }
 
 const initialState: UserState = {
@@ -44,6 +46,8 @@ const initialState: UserState = {
   achievements: [],
   description: '',
   points: 0,
+  avatar: '',
+  tg_userid: 0
 }
 
 const user = createSlice({
@@ -66,6 +70,8 @@ const user = createSlice({
       state.achievements = payload.achievements
       state.description = payload.description
       state.points = payload.points
+      state.avatar = payload.avatar
+      state.tg_userid = payload.tg_userid
     },
     updateProfileInfo(state, { payload }) {
       state.nickname = payload.nickname

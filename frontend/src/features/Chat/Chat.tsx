@@ -60,7 +60,7 @@ export const Chat: React.FC<ChatProps> = ({ onClose, chat }) => {
       const messageString = reader.result
       const message = JSON.parse(messageString as string)
       if (message.chat_id === chat.id) {
-        setMessages((prevState) => [...prevState, message])
+        setMessages((prevState) => [...prevState, {...message, id: message.message_id || message.id}])
       }
     }
 
@@ -69,11 +69,12 @@ export const Chat: React.FC<ChatProps> = ({ onClose, chat }) => {
 
   // should fix any
   const onSubmit: SubmitHandler<IMessage> = (values: any) => {
+    if (!values.message.trim()) return;
     const newMessage = {
       event: 'send_message',
       chat_id: chat.id,
       from_user: userId,
-      content: values.message,
+      content: values.message.trim(),
       created_at: dayjs().format('YYYY-MM-DD HH:mm:ss'),
     }
     socket?.send(JSON.stringify(newMessage))

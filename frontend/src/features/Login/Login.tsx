@@ -130,7 +130,6 @@ export const Login = () => {
     if (userId) {
       try {
         const res = await requestMaxUserInfo(userId)
-        console.log('MaxUser', res)
         dispatch(setUserInfo(res.data))
         clearProof()
         return redirectToMain()
@@ -181,7 +180,7 @@ export const Login = () => {
           </Title>
         </div>
         {renderRulesList()}
-        <TonConnectButton />
+        {/*<TonConnectButton />*/}
         <MainButton
           color="#6f58f6"
           onClick={() => onConnectLoginClick()}

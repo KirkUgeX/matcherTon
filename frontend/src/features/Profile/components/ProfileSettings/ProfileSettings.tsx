@@ -38,8 +38,6 @@ export const ProfileSettings = ({
     tagsSphere,
   } = user
 
-  console.log(x, linkedin, telegram);
-
   const formMethods = useForm<Partial<UserState>>({
     defaultValues: {
       nickname,

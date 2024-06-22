@@ -32,6 +32,19 @@ export const requestMaxUserInfo = (userId: number) => {
   )
 }
 
+export const requestUserTgImage = (userId: number) => {
+  const token = getJwt();
+  return axios.post(
+    `${serviceUrl}/requestGetAvatarTg`,
+    { tg_user_id: userId },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+}
+
 export const requestMinUserInfo = (userId: number) => {
   const token = getJwt()
   return axios.post(

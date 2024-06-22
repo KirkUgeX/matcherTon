@@ -20,7 +20,7 @@ import {
 import { jwtDecode } from 'jwt-decode'
 import { setUserId, setUserInfo } from '../../store/slices/user.ts'
 import { useDispatch } from 'react-redux'
-import { requestMaxUserInfo } from '../../services/main.ts'
+import {requestMaxUserInfo, requestUserTgImage} from '../../services/main.ts'
 import { useLogout } from '../../hooks/useLogout.ts'
 import { ShowNotify } from '../../components/shared/Notify/NotifyMethods.tsx'
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react'
@@ -45,12 +45,14 @@ export const SignUp = () => {
   }
 
   const onLastStepSubmit = async (nfts: Nft[]) => {
+    const userInfo = WebApp.initDataUnsafe;
     const { work, username, description, socials, tagsSphere } = signUp
     const newUser = {
       profileNickname: username,
       address: wallet?.account.address,
       socials: socials,
       tagsSphere: tagsSphere,
+      tg_userId: userInfo?.user?.id || 0,
       work: {
         position: work.position,
         company: work.company,
@@ -61,8 +63,13 @@ export const SignUp = () => {
         opensea_url: nft.openSeaUrl,
       })),
       description: description,
+      avatar: ''
     }
     try {
+      if (userInfo?.user?.id) {
+        const imageRes = await requestUserTgImage(userInfo.user.id);
+        newUser.avatar = imageRes.data.img;
+      }
       await createNewUser(newUser)
       const proof = getProof()
       if (wallet?.account && proof) {
@@ -76,9 +83,7 @@ export const SignUp = () => {
         navigate('/app')
       }
     } catch (e: any) {
-      console.log(e.response);
       if (e?.response?.data?.detail.includes('409')) {
-        console.log(e.response.data);
         await tonConnectUI.disconnect()
         clearProof()
         clearJwt()

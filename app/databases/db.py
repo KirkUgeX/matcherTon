@@ -44,14 +44,14 @@ class Database:
             return f"Error DB fetching profile: {e}"
 
     async def profile_make(self, profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,
-                           description):
+                           description, tg_userID, avatar):
         user_uuid = uuid.uuid4()
         try:
             inserted_id = await self.conn.fetchval("""
-                INSERT INTO profiles (profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,description,points, user_uuid)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id
+                INSERT INTO profiles (profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,description,points, user_uuid,tg_userid,avatar)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id
             """, profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info, description, 0,
-                  user_uuid)
+                  str(user_uuid), tg_userID, avatar)
             return inserted_id, user_uuid
         except asyncpg.PostgresError as e:
             print("Error creating profile:", e)

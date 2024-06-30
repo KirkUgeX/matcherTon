@@ -6,7 +6,7 @@ import json
 from dotenv import load_dotenv
 
 
-async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, description):
+async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, description, tg_userId, avatar):
     try:
         load_dotenv()
         db = Database()
@@ -36,7 +36,7 @@ async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, de
 
     user_id, user_uuid = await db.profile_make(profileNickname, time.time(), address, json.dumps(socials),
                                                json.dumps(tagsSphere), json.dumps(work), nft_id, more_info_id,
-                                               description)  # put the profile data
+                                               description, tg_userId, avatar)  # put the profile data
     if isinstance(user_id, str):
         if "Error" in user_id:
             return user_id, user_uuid
@@ -104,6 +104,7 @@ async def get_all_user_info(userID):
 
     profile_info = await db.profile_show(
         userID)
+
     if isinstance(profile_info, str):
         if "Error" in profile_info:
             return profile_info
@@ -123,6 +124,9 @@ async def get_all_user_info(userID):
     if isinstance(more_info, str):
         if "Error" in more_info:
             return more_info
+
+    score = more_info[0] if more_info[0] is not None else 0
+    achievements = more_info[1] if more_info[1] is not None else []
 
     print(more_info)
 
@@ -147,12 +151,13 @@ async def get_all_user_info(userID):
         "ban": profile_info['banstatus'],
         "mute": profile_info['mutestatus'],
         "nfts": nfts,
-        "score": more_info[0],
-        "achievements": more_info[1],
+        "score": score,
+        "achievements": achievements,
         "description": profile_info['description'],
         "points": profile_info['points'],
+        "tg_userid": profile_info['tg_userid'],
+        "avatar": profile_info['avatar']
     }
-
     return data
 
 
@@ -367,6 +372,8 @@ async def reaction_like_dislike(user_id, target_id, reaction_type):
             return "match"
         else:
             return "nomatch"
+    if reaction_type == 'dislike':
+        return "nomatch"
 
 
 async def all_matches(user_id):

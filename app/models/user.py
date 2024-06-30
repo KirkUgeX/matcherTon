@@ -28,6 +28,8 @@ class AddUserRequest(BaseModel):
     work: Work
     nfts: List[NFT]
     description: str
+    tg_userId: int
+    avatar: str or None
 
 
 class SuccessAndUuid(BaseModel):
@@ -52,6 +54,8 @@ class getAllUserInfoResponse(BaseModel):
     achievements: list[str]
     description: str
     points: int
+    tg_userid: int or str or None
+    avatar: str or None
 
 
 class getMinUserInfoRequest(BaseModel):
@@ -159,3 +163,11 @@ class whitelistreq(BaseModel):
 class AddNFTS(BaseModel):
     address: str
     picked_nfts_list: list[NFT]
+
+
+class getAvatarTg(BaseModel):
+    tg_user_id: int
+
+
+class getAvatarTgResponse(BaseModel):
+    img: str

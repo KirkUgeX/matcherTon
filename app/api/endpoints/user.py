@@ -12,6 +12,8 @@ from app.messenger.msg_functions import create_chat, get_all_messages, get_all_c
 from slowapi.errors import RateLimitExceeded
 from starlette.responses import PlainTextResponse
 from starlette.status import HTTP_429_TOO_MANY_REQUESTS
+from bot import tg_avatars
+
 
 router = APIRouter()
 
@@ -34,22 +36,28 @@ async def request_add_user(request: Request, background_tasks: BackgroundTasks,
                     detail=f"Error when adding a user: {key} invalid nickname in socials include link http or dot"
                 )
 
-        nfts = [i.dict() for i in user.nfts]
+        socials = socials_links
         work = user.work.dict()
+        req_nfts = user.nfts
+        nfts = [i.dict() for i in req_nfts]
+
         result = await uf.add_user(
             escape_html(user.profile_nickname),
             escape_html(user.address),
-            escape_html(socials_links),
+            escape_html(socials),
             escape_html(user.tags_sphere),
             escape_html(work),
             escape_html(nfts),
-            escape_html(user.description)
+            escape_html(user.description),
+            escape_html(user.tg_userId),
+            escape_html(user.avatar)
         )
 
-        if isinstance(result, str) and "Error" in result:
-            raise HTTPException(status_code=500, detail=result)
+        if isinstance(result, str):
+            if "Error" in result:
+                raise HTTPException(status_code=500, detail=f"{str(result)}")
 
-        background_tasks.add_task(scoreBackground_test, escape_html(user.address), escape_html(user.tags_sphere),
+        background_tasks.add_task(scoreBackground, escape_html(user.address), escape_html(user.tags_sphere),
                                   result[2])
         print({"response": result[0], "user_uuid": result[1]})
         return {"response": str(result[0]), "user_uuid": result[1]}
@@ -82,6 +90,14 @@ async def get_passions():
                      "VC", "Angel Investments", "GameDev", "Marketing", "SEO", "ML/AI", "Data Science",
                      "Computer Vision", "LLM/GPT/NLP", "VR/AR", "Graphic Designer", "UX/UI"]
     return {"passions": passions_list}
+
+
+@router.post("/requestGetAvatarTg")
+@limiter.limit("1000/minute")
+async def request_getMinUserInfo(request: Request, user: user_model.getAvatarTg = Body(...)
+                                 ) -> user_model.getAvatarTgResponse:
+    image = await tg_avatars.get_photo(user.tg_user_id)
+    return {"img": str(image)}
 
 
 @router.post("/requestGetMinUserInfo")

@@ -258,7 +258,7 @@ async def chat_creator(request: Request, chat_model: ChatCreation):
     return await create_chat(chat_model.chat_name, chat_model.chat_users)
 
 
-@router.get("/getAllMessages")
+@router.post("/getAllMessages")
 @limiter.limit("10000/minute")
 async def get_chat_history(request: Request, user: GetAllMessages):
     return await get_all_messages(user_id=user.user_id, chat_id=user.chat_id)

@@ -138,13 +138,12 @@ async def send_message(user: Message):
 
 
 async def get_all_chats(user_id):
-    try:
-        load_dotenv()
-        db = MessenggerDB()
-        await db.connect()
 
-    except Exception as e:
-        raise HTTPException(status_code=501, detail=f"DB connection error :{str(e)}")
+    load_dotenv()
+    db = MessenggerDB()
+    await db.connect()
+
+
     try:
         load_dotenv()
         db_k = Database()
@@ -152,32 +151,38 @@ async def get_all_chats(user_id):
     except Exception as e:
         raise HTTPException(status_code=501, detail=f"DB connection error :{str(e)}")
 
-    try:
-        chat_list = await db.get_user_chats(user_id=user_id)
-        new_chat_list = []
-        for chat in chat_list:
-            oponent_id = await db.get_other_user_in_chat(chat["id"], user_id)
-            profile_in = await db_k.profile_show(int(oponent_id))
-            profile_info = profile_in
-            if isinstance(profile_info, str):
-                if "Error" in profile_info:
-                    return profile_info
-            nicname = profile_info[1]
-            nfts_id = profile_info[7]
 
-            nfts_cor = await db_k.nfts_get(nfts_id)
-            nfts = json.loads(nfts_cor['nftsjson'])[0]
+    chat_list = await db.get_user_chats(user_id=user_id)
+    new_chat_list = []
+    for chat in chat_list:
+        oponent_id = await db.get_other_user_in_chat(chat["id"], user_id)
+        profile_in = await db_k.profile_show(int(oponent_id))
+        profile_info = profile_in
+        if isinstance(profile_info, str):
+            if "Error" in profile_info:
+                return profile_info
+        nicname = profile_info[1]
+        nfts_id = profile_info[7]
+
+        nfts_cor = await db_k.nfts_get(nfts_id)
+
+        if nfts_cor['nftsjson'] is not None and isinstance(nfts_cor['nftsjson'], list):
+            nfts = nfts_cor['nftsjson'][0]
             if isinstance(nfts, str):
                 if "Error" in nfts:
                     return nfts
+        else:
+            nfts = []
+        if isinstance(nfts, str):
+            if "Error" in nfts:
+                return nfts
 
-            chat_info = {
-                "id": chat["id"],
-                "chat_name": nicname,
-                "user_nft": nfts
-            }
-            new_chat_list.append(chat_info)
-        return new_chat_list
+        chat_info = {
+            "id": chat["id"],
+            "chat_name": nicname,
+            "user_nft": nfts
+        }
+        new_chat_list.append(chat_info)
+    return new_chat_list
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+

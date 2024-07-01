@@ -1,16 +1,33 @@
 import asyncio
-import os
-
+import base64
 import psycopg2
 import websockets
 import json
-from dotenv import load_dotenv
+from Crypto.Protocol.KDF import PBKDF2
 from app.databases.messenger_db import MessenggerDB
 from fastapi import HTTPException
 from app.databases.db import Database
-from app.core.security import encrypter, password
+from Crypto.Random import get_random_bytes
+from app.core.security import AESCipher, password
 from app.utils import uf
+import ssl
 from websockets import WebSocketServerProtocol
+
+
+async def encrypter(password, data):
+    try:
+        salt = get_random_bytes(16)
+        kdf = await asyncio.to_thread(PBKDF2, password, salt, dkLen=32, count=1000)
+        key = kdf[:32]
+
+        cipher = AESCipher(key)
+        encrypted_data = cipher.encrypt(data)
+        stroke_key = base64.b64encode(key).decode('ASCII')
+        # print(f'Encrypted: {encrypted_data}')
+        return {"encrypted_data": str(encrypted_data), "key": stroke_key}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Message encryption error :{str(e)}")
+
 
 connections = {}
 
@@ -21,15 +38,12 @@ async def chat_server(websocket: WebSocketServerProtocol, path: str):
     connections[user_uuid] = websocket
 
     try:
-        load_dotenv()
         db_m = MessenggerDB()
         await db_m.connect()
     except Exception as e:
         raise HTTPException(status_code=501, detail=f"DB connection error :{str(e)}")
     try:
-        load_dotenv()
         db = Database()
-        await db.connect()
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
 
@@ -38,42 +52,19 @@ async def chat_server(websocket: WebSocketServerProtocol, path: str):
             # Парсинг JSON-сообщения
             try:
                 message_data = json.loads(message)
-                print("Received message:", message_data)
 
-                user_uuid_from_db = await db.get_user_uuid_by_id(message_data["from_user"])
-
-                check_user_in_chat = await db_m.check_user_in_chat(user_id=message_data["from_user"],
-                                                                   chat_id=message_data["chat_id"])
-
-                if not check_user_in_chat:
+                if not await db_m.check_user_in_chat(user_id=message_data["from_user"],
+                                                     chat_id=message_data["chat_id"]):
                     error_message = json.dumps({"error": "User not found in chat"})
                     await websocket.send(error_message)
                     continue
 
-                if str(user_uuid_from_db) != user_uuid:
+                if not db.get_user_uuid_by_id(message_data["from_user"]) == user_uuid:
                     error_message = json.dumps({"error": "You have wrong UUID"})
                     await websocket.send(error_message)
                     continue
 
                 if message_data["event"] == "send_message":
-                    new_message = {
-                        "event": "new_message",
-                        "chat_id": message_data["chat_id"],
-                        "from_user": message_data["from_user"],
-                        "content": message_data["content"],
-                        "created_at": message_data["created_at"]
-                    }
-                    chat_users_id = await db_m.get_other_user_in_chat(message_data["chat_id"],
-                                                                      message_data["from_user"])
-                    receiver_uuid = str(await db.get_user_uuid_by_id(chat_users_id))
-
-                    if receiver_uuid in connections:
-                        await connections[receiver_uuid].send(json.dumps(new_message).encode('utf-8'))
-                        await connections[user_uuid].send(json.dumps(new_message).encode('utf-8'))
-                    else:
-                        await connections[user_uuid].send(json.dumps(new_message).encode('utf-8'))
-
-                        continue
 
                     encrypt_res = await encrypter(password=password, data=message_data["content"])
                     encrypt_message, key = encrypt_res["encrypted_data"], encrypt_res["key"]
@@ -86,11 +77,32 @@ async def chat_server(websocket: WebSocketServerProtocol, path: str):
                         created_at=message_data["created_at"],
                         key=key
                     )
+                    new_message = {
+                        "event": "new_message",
+                        "message_id": message_id,
+                        "chat_id": message_data["chat_id"],
+                        "from_user": message_data["from_user"],
+                        "content": message_data["content"],
+                        "created_at": message_data["created_at"]
+                    }
+                    print(message_id)
+                    chat_users_id = await db_m.get_other_user_in_chat(message_data["chat_id"], message_data["from_user"])
+                    receiver_uuid = await db.get_user_uuid_by_id(chat_users_id)
+
+                    if receiver_uuid in connections:
+                        await connections[receiver_uuid].send(json.dumps(new_message).encode('utf-8'))
+                        await connections[user_uuid].send(json.dumps(new_message).encode('utf-8'))
+                    else:
+                        await connections[user_uuid].send(json.dumps(new_message).encode('utf-8'))
+
+                        continue
+
+
+
                     chat_users = await db_m.get_chat_users(chat_id=message_data["chat_id"])
                     messages_num = await db_m.count_messages_in_chat(chat_id=message_data["chat_id"])
-                    num_messages_by_one = await db_m.count_messages_by_user_in_chat(
-                        user_id=message_data["from_user"],
-                        chat_id=message_data["chat_id"])
+                    num_messages_by_one = await db_m.count_messages_by_user_in_chat(user_id=message_data["from_user"],
+                                                                                    chat_id=message_data["chat_id"])
 
                     if not isinstance(num_messages_by_one, int) or not isinstance(messages_num, int):
                         raise HTTPException(status_code=502, detail=f"Error counting messages by user in chat")
@@ -109,18 +121,14 @@ async def chat_server(websocket: WebSocketServerProtocol, path: str):
                 error_message = json.dumps({"error": "Wrong JSON format"})
                 await websocket.send(error_message)
                 continue
-
-            except Exception as e:
-                print(f"Error processing message: {str(e)}")
-                await websocket.send(json.dumps({"error": f"Error processing message: {str(e)}"}))
-                continue
-
     finally:
         del connections[user_uuid]
 
-load_dotenv()
-start_server = websockets.serve(chat_server, os.getenv("WS_SER"), os.getenv("WS_PORT"))
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+ssl_context.load_cert_chain(certfile="fullchain.pem", keyfile="privkey.pem")
 
+start_server = websockets.serve(chat_server, '38.242.233.161', 8765, ssl=ssl_context)
+print(f"Websocket server started and listening on wss://38.242.233.161:8765")
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

@@ -14,7 +14,10 @@ app.add_middleware(
         "http://localhost:517",
         "http://localhost:5173",
         "https://matcher.cc",
-        "http://matcher.cc"
+        "http://matcher.cc",
+        "https://ton.matcher.fun",
+        "https://info.matcher.fun",
+        "http://info.matcher.fun"
     ],
     allow_credentials=True,
     allow_methods=["*"],

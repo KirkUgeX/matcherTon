@@ -278,6 +278,7 @@ async def AddNFTS(request: Request, user: user_model.AddNFTS = Body(...),
         raise HTTPException(status_code=500, detail=f"Error when adding nft, requestAddNFTS :{str(e)}")
 
 
-@router.exception_handler(RateLimitExceeded)
+"""@router.exception_handler(RateLimitExceeded)
 async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     return PlainTextResponse(str(exc), status_code=HTTP_429_TOO_MANY_REQUESTS)
+"""

@@ -1,7 +1,7 @@
 import aiohttp
 import base64
 import ssl
-from config_reader import config
+
 
 
 async def get_user_photos(bot_token, user_id):
@@ -57,7 +57,7 @@ async def download_photo_as_base64(photo_url):
 
 
 async def get_photo(user_id):
-    bot_token = config.bot_token.get_secret_value()
+    bot_token = "7052722426:AAFa_pw1VCRlfcWiQUQkjIlwEJqREp11cbw"
     photo_ids = await get_user_photos(bot_token, user_id)
 
     for photo_id in photo_ids[:1]:

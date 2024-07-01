@@ -1,13 +1,13 @@
 import asyncio
 import logging
-from config_reader import config
+
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 from messages import welcome_message
 
 logging.basicConfig(level=logging.INFO)
 
-bot = Bot(token=config.bot_token.get_secret_value())
+bot = Bot(token="7052722426:AAFa_pw1VCRlfcWiQUQkjIlwEJqREp11cbw")
 
 dp = Dispatcher()
 

@@ -131,11 +131,11 @@ class reactionLikeDislikeResponse(BaseModel):
 
 
 class nextUser(BaseModel):
-    user_id: int
+    user_id: int | None
 
 
 class nextUserResponse(BaseModel):
-    nextUserId: int or None
+    nextUserId: int | None
 
 
 class getAllMatches(BaseModel):

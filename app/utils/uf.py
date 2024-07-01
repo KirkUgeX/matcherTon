@@ -113,11 +113,14 @@ async def get_all_user_info(userID):
     more_info_id = profile_info[8]
 
     nfts_cor = await db.nfts_get(nfts_id)
-    nfts = nfts_cor[2]
-    if isinstance(nfts, str):
-        if "Error" in nfts:
-            return nfts
 
+    if nfts_cor[2] is not None and isinstance(nfts_cor[2], list):
+        nfts = nfts_cor[2]
+        if isinstance(nfts, str):
+            if "Error" in nfts:
+                return nfts
+    else:
+        nfts = []
     more_info_cor = await db.recomendSys_data_get(userID)
     more_info = more_info_cor[2:]
 
@@ -126,11 +129,14 @@ async def get_all_user_info(userID):
             return more_info
 
     score = more_info[0] if more_info[0] is not None else 0
-    achievements = more_info[1] if more_info[1] is not None else []
+    if more_info[1] is not None and isinstance(more_info[1], list):
+        achievements = more_info[1]
+    else:
+        achievements = []
 
     print(more_info)
 
-    print(profile_info)
+    #print(profile_info)
     print(nfts, more_info)
     print(profile_info[2])
 
@@ -158,6 +164,7 @@ async def get_all_user_info(userID):
         "tg_userid": profile_info['tg_userid'],
         "avatar": profile_info['avatar']
     }
+
     return data
 
 

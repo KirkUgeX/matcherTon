@@ -4,6 +4,7 @@ import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 from messages import welcome_message
+import keyboard as kb
 from dotenv import load_dotenv
 
 
@@ -16,8 +17,8 @@ dp = Dispatcher()
 
 
 @dp.message(Command("start"))
-async def cmd_start(message: types.Message):
-    await message.answer(welcome_message)
+async def cmd_random(message: types.Message):
+    await message.reply(text=welcome_message, reply_markup=kb.settings)
 
 
 async def main():

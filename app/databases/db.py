@@ -44,14 +44,14 @@ class Database:
             return f"Error DB fetching profile: {e}"
 
     async def profile_make(self, profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,
-                           description):
+                           description, tg_userID, avatar):
         user_uuid = uuid.uuid4()
         try:
             inserted_id = await self.conn.fetchval("""
-                INSERT INTO profiles (profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,description,points, user_uuid)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id
+                INSERT INTO profiles (profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,description,points, user_uuid,tg_userid,avatar)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id
             """, profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info, description, 0,
-                  user_uuid)
+                  str(user_uuid), tg_userID, avatar)
             return inserted_id, user_uuid
         except asyncpg.PostgresError as e:
             print("Error creating profile:", e)
@@ -357,10 +357,29 @@ class Database:
             user_uuid = await self.conn.fetchval("""
                 SELECT user_uuid FROM profiles WHERE address = $1
             """, wallet)
-            return user_uuid if user_uuid is not None else None
+            print(user_uuid)
+            return str(user_uuid) if user_uuid is not None else None
         except asyncpg.PostgresError as e:
             print("Error wallet user UUID:", e)
             return f"Error wallet user UUID: {e}"
+
+    async def get_tg_by_id(self, user_id):
+        try:
+            row = await self.conn.fetchrow("""
+                SELECT tg_userid, profilenickname FROM profiles WHERE id = $1
+            """, user_id)
+
+            if row is None:
+                return None, None
+
+            tg_userid = row["tg_userid"]
+            nickname = row["profilenickname"]
+            return [tg_userid, nickname]
+
+        except asyncpg.PostgresError as e:
+            print("Error retrieving user UUID:", e)
+            return f"Error retrieving user UUID: {e}"
+
 
 
 class DatabaseWL:

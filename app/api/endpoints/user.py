@@ -1,17 +1,16 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, BackgroundTasks
 from app.models import user as user_model
 from app.models.token import TokenData
-from app.models.chat import ChatCreation, GetAllMessages, Message
+from app.models.chat import ChatCreation, GetAllMessages
 from app.core.limiter import limiter
 from app.utils import uf
 from app.utils import recommendation_sys as rs
 from app.utils.html import escape_html
 from app.api.endpoints.auth import get_current_user, get_current_holder
-from app.utils.score import scoreBackground, scoreBackground_test
+from app.utils.score import scoreBackground
+import app.utils.nft_info_func  as nf
 from app.messenger.msg_functions import create_chat, get_all_messages, get_all_chats
-from slowapi.errors import RateLimitExceeded
-from starlette.responses import PlainTextResponse
-from starlette.status import HTTP_429_TOO_MANY_REQUESTS
+from app.bot import tg_avatars
 
 router = APIRouter()
 
@@ -21,12 +20,17 @@ router = APIRouter()
 async def request_add_user(request: Request, background_tasks: BackgroundTasks,
                            user: user_model.AddUserRequest = Body(...),
                            current_user: TokenData = Depends(get_current_user)) -> user_model.SuccessAndUuid:
+
+    print(user)
     try:
-        if not await uf.unique_address(escape_html(user.address)):
+        if  await uf.unique_address(escape_html(user.address))!= True:
+            print("if not await uf.unique_address(escape_html(user.address)):")
             raise HTTPException(status_code=409)
 
         socials = user.socials.dict()
+        print(socials)
         socials_links = await uf.prepend_links(socials)
+        print(type(socials_links), socials_links)
         for key, url_social in socials_links.items():
             if url_social == "invalid nickname in socials include link http or dot":
                 raise HTTPException(
@@ -34,22 +38,28 @@ async def request_add_user(request: Request, background_tasks: BackgroundTasks,
                     detail=f"Error when adding a user: {key} invalid nickname in socials include link http or dot"
                 )
 
-        nfts = [i.dict() for i in user.nfts]
+        socials = socials_links
         work = user.work.dict()
+        req_nfts = user.nfts
+        nfts = [i.dict() for i in req_nfts]
+
         result = await uf.add_user(
-            escape_html(user.profile_nickname),
+            escape_html(user.profileNickname),
             escape_html(user.address),
-            escape_html(socials_links),
-            escape_html(user.tags_sphere),
+            escape_html(socials),
+            escape_html(user.tagsSphere),
             escape_html(work),
             escape_html(nfts),
-            escape_html(user.description)
+            escape_html(user.description),
+            escape_html(user.tg_userId),
+            escape_html(user.avatar)
         )
 
-        if isinstance(result, str) and "Error" in result:
-            raise HTTPException(status_code=500, detail=result)
+        if isinstance(result, str):
+            if "Error" in result:
+                raise HTTPException(status_code=500, detail=f"{str(result)}")
 
-        background_tasks.add_task(scoreBackground_test, escape_html(user.address), escape_html(user.tags_sphere),
+        background_tasks.add_task(scoreBackground, escape_html(user.address), escape_html(user.tagsSphere),
                                   result[2])
         print({"response": result[0], "user_uuid": result[1]})
         return {"response": str(result[0]), "user_uuid": result[1]}
@@ -82,6 +92,14 @@ async def get_passions():
                      "VC", "Angel Investments", "GameDev", "Marketing", "SEO", "ML/AI", "Data Science",
                      "Computer Vision", "LLM/GPT/NLP", "VR/AR", "Graphic Designer", "UX/UI"]
     return {"passions": passions_list}
+
+
+@router.post("/requestGetAvatarTg")
+@limiter.limit("1000/minute")
+async def request_getMinUserInfo(request: Request, user: user_model.getAvatarTg = Body(...)
+                                 ) -> user_model.getAvatarTgResponse:
+    image = await tg_avatars.get_photo(user.tg_user_id)
+    return {"img": str(image)}
 
 
 @router.post("/requestGetMinUserInfo")
@@ -242,9 +260,10 @@ async def chat_creator(request: Request, chat_model: ChatCreation):
     return await create_chat(chat_model.chat_name, chat_model.chat_users)
 
 
-@router.get("/getAllMessages")
+@router.post("/getAllMessages")
 @limiter.limit("10000/minute")
 async def get_chat_history(request: Request, user: GetAllMessages):
+    print("get_chat_history")
     return await get_all_messages(user_id=user.user_id, chat_id=user.chat_id)
 
 
@@ -261,7 +280,20 @@ async def AddNFTS(request: Request, user: user_model.AddNFTS = Body(...),
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error when adding nft, requestAddNFTS :{str(e)}")
 
+@router.post("/requestNFTgetALL")
+@limiter.limit("1000/minute")
+async def get_all_nfts(request: Request, user: user_model.NFTgetALL = Body(...),
+                       current_user: TokenData = Depends(get_current_user)) -> user_model.NFTgetALLResponse:
+    try:
+        nfts_data_all = nf.get_all_ton_nfts(escape_html(user.address))
+        if isinstance(nfts_data_all, str):
+            if "Error" in nfts_data_all:
+                raise HTTPException(status_code=500, detail=f"{nfts_data_all}")
+        return {"nfts": nfts_data_all}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error when receiving nft from Opensea's api :{str(e)}")
 
-@router.exception_handler(RateLimitExceeded)
+"""@router.exception_handler(RateLimitExceeded)
 async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
     return PlainTextResponse(str(exc), status_code=HTTP_429_TOO_MANY_REQUESTS)
+"""

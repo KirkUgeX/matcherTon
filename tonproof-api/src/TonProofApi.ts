@@ -10,7 +10,11 @@ const tonProofPrefix = 'ton-proof-item-v2/';
 const tonConnectPrefix = 'ton-connect';
 const allowedDomains = [
   'ton-connect.github.io',
-  'localhost:5173'
+  'localhost:5173',
+  '80a8-84-224-24-194.ngrok-free.app',
+  'cc1e-84-224-90-99.ngrok-free.app',
+  'a9a1-89-135-32-37.ngrok-free.app',
+  'ton.matcher.fun'
 ];
 const validAuthTime = 48 * 60*60; // 2 day
 

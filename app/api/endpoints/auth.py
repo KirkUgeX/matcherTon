@@ -52,16 +52,16 @@ async def generate_token(form_data: OAuthData):
             headers={"WWW-Authenticate": "Bearer"},
         )
     user_id = uuid_wall = None
-    if uf.idFromWallet(address) != None:
-        user_id = uf.idFromWallet(address)
-        uuid_wall = uf.uuidFromWallet(address)
-        print(uuid_wall)
+    if await uf.idFromWallet(address) != None:
+        user_id = await uf.idFromWallet(address)
+        uuid_wall = await uf.uuidFromWallet(address)
+        #print(uuid_wall)
 
     access_token_expires = timedelta(minutes=20)
     access_token = await create_access_token(
         data={"sub": address, "user_id": user_id, "uuid": uuid_wall}, expires_delta=access_token_expires
     )
-    print({"sub": address, "user_id": user_id, "uuid": uuid_wall})
+    #print({"sub": address, "user_id": user_id, "uuid": uuid_wall})
     return {"access_token": access_token, "token_type": "bearer"}
 
 

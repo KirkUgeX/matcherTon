@@ -3,32 +3,34 @@ from typing import Optional, List
 from uuid import UUID
 
 
+
 class Socials(BaseModel):
-    x: Optional[str] = None
-    linkedin: Optional[str] = None
-    telegram: Optional[str] = None
+    x: str | None = None
+    linkedin: str | None = None
+    telegram: str | None = None
 
 
 class Work(BaseModel):
-    position: Optional[str] = None
-    company: Optional[str] = None
+    position: str | None = None
+    company: str | None = None
 
 
 class NFT(BaseModel):
     name: str
     image_url: str
-    opensea_url: str
+    opensea_url: str | None
 
 
 class AddUserRequest(BaseModel):
-    profile_nickname: str
+    profileNickname: str
     address: str
     socials: Socials
-    tags_sphere: List[str]
+    tagsSphere: list[str]
     work: Work
-    nfts: List[NFT]
+    nfts: list[NFT]
     description: str
-
+    tg_userId: int
+    avatar: str | None
 
 class SuccessAndUuid(BaseModel):
     response: str
@@ -52,6 +54,8 @@ class getAllUserInfoResponse(BaseModel):
     achievements: list[str]
     description: str
     points: int
+    tg_userid: int | str | None
+    avatar: str | None
 
 
 class getMinUserInfoRequest(BaseModel):
@@ -127,11 +131,11 @@ class reactionLikeDislikeResponse(BaseModel):
 
 
 class nextUser(BaseModel):
-    user_id: int
+    user_id: int | None
 
 
 class nextUserResponse(BaseModel):
-    nextUserId: int or None
+    nextUserId: int | None
 
 
 class getAllMatches(BaseModel):
@@ -159,3 +163,11 @@ class whitelistreq(BaseModel):
 class AddNFTS(BaseModel):
     address: str
     picked_nfts_list: list[NFT]
+
+
+class getAvatarTg(BaseModel):
+    tg_user_id: int
+
+
+class getAvatarTgResponse(BaseModel):
+    img: str

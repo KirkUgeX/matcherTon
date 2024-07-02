@@ -4,9 +4,10 @@ import time
 import psycopg2
 import json
 from dotenv import load_dotenv
+from app.bot import messages, notices
 
 
-async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, description):
+async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, description, tg_userId, avatar):
     try:
         load_dotenv()
         db = Database()
@@ -36,7 +37,7 @@ async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, de
 
     user_id, user_uuid = await db.profile_make(profileNickname, time.time(), address, json.dumps(socials),
                                                json.dumps(tagsSphere), json.dumps(work), nft_id, more_info_id,
-                                               description)  # put the profile data
+                                               description, tg_userId, avatar)  # put the profile data
     if isinstance(user_id, str):
         if "Error" in user_id:
             return user_id, user_uuid
@@ -104,6 +105,7 @@ async def get_all_user_info(userID):
 
     profile_info = await db.profile_show(
         userID)
+
     if isinstance(profile_info, str):
         if "Error" in profile_info:
             return profile_info
@@ -112,11 +114,14 @@ async def get_all_user_info(userID):
     more_info_id = profile_info[8]
 
     nfts_cor = await db.nfts_get(nfts_id)
-    nfts = nfts_cor[2]
-    if isinstance(nfts, str):
-        if "Error" in nfts:
-            return nfts
 
+    if nfts_cor[2] is not None and isinstance(nfts_cor[2], list):
+        nfts = nfts_cor[2]
+        if isinstance(nfts, str):
+            if "Error" in nfts:
+                return nfts
+    else:
+        nfts = []
     more_info_cor = await db.recomendSys_data_get(userID)
     more_info = more_info_cor[2:]
 
@@ -124,9 +129,15 @@ async def get_all_user_info(userID):
         if "Error" in more_info:
             return more_info
 
+    score = more_info[0] if more_info[0] is not None else 0
+    if more_info[1] is not None and isinstance(more_info[1], list):
+        achievements = more_info[1]
+    else:
+        achievements = []
+
     print(more_info)
 
-    print(profile_info)
+    #print(profile_info)
     print(nfts, more_info)
     print(profile_info[2])
 
@@ -147,10 +158,12 @@ async def get_all_user_info(userID):
         "ban": profile_info['banstatus'],
         "mute": profile_info['mutestatus'],
         "nfts": nfts,
-        "score": more_info[0],
-        "achievements": more_info[1],
+        "score": score,
+        "achievements": achievements,
         "description": profile_info['description'],
         "points": profile_info['points'],
+        "tg_userid": profile_info['tg_userid'],
+        "avatar": profile_info['avatar']
     }
 
     return data
@@ -289,6 +302,7 @@ async def uuidFromWallet(wallet):
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
     res = await db.get_user_uuid_by_wallet(wallet)
+    print(type(res))
     return res
 
 
@@ -361,12 +375,31 @@ async def reaction_like_dislike(user_id, target_id, reaction_type):
             await increase_num_points(target_id, 100)
             matchJSON.append(target_id)
             res_data = await db.match_data_add(user_id, json.dumps(matchJSON))
+
+            user_tg_ = await get_telegram_id(user_id)
+            user_tg = user_tg_["tg_id"]
+
+            target_tg_ = await get_telegram_id(target_id)
+            target_tg = target_tg_["tg_id"]
+
+            await notices.send_notice(target_tg, messages.new_match)
+            await notices.send_notice(user_tg, messages.new_match)
+
             if isinstance(res_data, str):
                 if "Error" in res_data:
                     return res_data
             return "match"
         else:
+            username_ = await get_telegram_id(user_id)
+            username = username_["profilenickname"]
+
+            target_tg_ = await get_telegram_id(target_id)
+            target_tg = target_tg_["tg_id"]
+
+            await notices.send_notice(target_tg, messages.profile_like.replace("{username}", f"{username}"))
             return "nomatch"
+    if reaction_type == 'dislike':
+        return "nomatch"
 
 
 async def all_matches(user_id):
@@ -489,3 +522,19 @@ async def get_nfts(user_id, picked_nfts_list):
     except Exception as e:
         print(f"Opensea get_nfts An unexpected Error occurred: {e}")
         return f"Opensea get_nfts An unexpected Error occurred: {e}"
+
+
+async def get_telegram_id(user_id):
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+
+    try:
+        tg_id, profilenickname = await db.get_tg_by_id(user_id)
+
+        return {"tg_id": tg_id, "profilenickname": profilenickname}
+    except Exception as e:
+        return "Cant get tg_id:" + str(e)

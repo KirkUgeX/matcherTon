@@ -41,7 +41,7 @@ async def get_all_messages(user_id, chat_id):
 
         return messages
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in receiving chat history :{str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error in receiving chat history: {str(e)}")
 
 
 async def create_chat(chat_name, chat_users):
@@ -125,7 +125,8 @@ async def send_message(user: Message):
             "reply_to": user.reply_to
         }
 
-        print(f"Attempting to connect to WebSocket: ws://localhost:1234/{str(oponent_uuid)}")  # f"ws://38.242.233.161:8765/{oponent_uuid}"
+        print(
+            f"Attempting to connect to WebSocket: ws://localhost:1234/{str(oponent_uuid)}")  # f"ws://38.242.233.161:8765/{oponent_uuid}"
         async with websockets.connect(f"ws://127.0.0.1:666/{str(oponent_uuid)}") as websocket:
             await websocket.send(json.dumps({"message_id": message_id, "message": message_data}))
             response = await websocket.recv()
@@ -138,13 +139,10 @@ async def send_message(user: Message):
 
 
 async def get_all_chats(user_id):
-    try:
-        load_dotenv()
-        db = MessenggerDB()
-        await db.connect()
+    load_dotenv()
+    db = MessenggerDB()
+    await db.connect()
 
-    except Exception as e:
-        raise HTTPException(status_code=501, detail=f"DB connection error :{str(e)}")
     try:
         load_dotenv()
         db_k = Database()
@@ -152,32 +150,40 @@ async def get_all_chats(user_id):
     except Exception as e:
         raise HTTPException(status_code=501, detail=f"DB connection error :{str(e)}")
 
-    try:
-        chat_list = await db.get_user_chats(user_id=user_id)
-        new_chat_list = []
-        for chat in chat_list:
-            oponent_id = await db.get_other_user_in_chat(chat["id"], user_id)
-            profile_in = await db_k.profile_show(int(oponent_id))
-            profile_info = profile_in
-            if isinstance(profile_info, str):
-                if "Error" in profile_info:
-                    return profile_info
-            nicname = profile_info[1]
-            nfts_id = profile_info[7]
+    chat_list = await db.get_user_chats(user_id=user_id)
+    new_chat_list = []
+    for chat in chat_list:
+        oponent_id = await db.get_other_user_in_chat(chat["id"], user_id)
+        profile_in = await db_k.profile_show(int(oponent_id))
+        profile_info = profile_in
+        if isinstance(profile_info, str):
+            if "Error" in profile_info:
+                return profile_info
+        if profile_info==None:
+            continue
+        print("USR:",oponent_id)
+        print("chat:", chat)
+        print("profile_info:",profile_info)
+        nicname = profile_info[1]
+        nfts_id = profile_info[7]
 
-            nfts_cor = await db_k.nfts_get(nfts_id)
-            nfts = json.loads(nfts_cor['nftsjson'])[0]
+        nfts_cor = await db_k.nfts_get(nfts_id)
+
+        if nfts_cor['nftsjson'] is not None and isinstance(nfts_cor['nftsjson'], list):
+            nfts = nfts_cor['nftsjson'][0]
             if isinstance(nfts, str):
                 if "Error" in nfts:
                     return nfts
+        else:
+            nfts = []
+        if isinstance(nfts, str):
+            if "Error" in nfts:
+                return nfts
 
-            chat_info = {
-                "id": chat["id"],
-                "chat_name": nicname,
-                "user_nft": nfts
-            }
-            new_chat_list.append(chat_info)
-        return new_chat_list
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"{e}")
+        chat_info = {
+            "id": chat["id"],
+            "chat_name": nicname,
+            "user_nft": nfts
+        }
+        new_chat_list.append(chat_info)
+    return new_chat_list

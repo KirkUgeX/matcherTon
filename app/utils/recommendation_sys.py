@@ -2,7 +2,7 @@ from app.databases.db import Database
 from app.utils.recSystem import recomndation_sys_async as rs
 import psycopg2
 from dotenv import load_dotenv
-
+import json
 
 async def recomendSys_change(userID, score, achievements, madedata):
     try:
@@ -58,9 +58,12 @@ async def get_next_user_for_user(user_id):
     if isinstance(data, str):
         if "Error" in data:
             return data
-    reaction_data = data[5] + data[6]
+
+    reaction_data = json.loads(data[5]) + json.loads(data[6])
+    print("User reaction list", reaction_data,type(reaction_data))
     user_reaction = [item[0] for item in reaction_data]
-    rec_sys = rs.RecSystem('recSystem/recData/recSystem_state.pkl')
+
+    rec_sys = rs.RecSystem('app/utils/recSystem/recData/recSystem_state.pkl')
     await rec_sys.async_init()
     recommendation = await rec_sys.get_recommendations(data[1], 1, user_reaction)
     if type(recommendation) == list:

@@ -159,6 +159,11 @@ async def get_all_chats(user_id):
         if isinstance(profile_info, str):
             if "Error" in profile_info:
                 return profile_info
+        if profile_info==None:
+            continue
+        print("USR:",oponent_id)
+        print("chat:", chat)
+        print("profile_info:",profile_info)
         nicname = profile_info[1]
         nfts_id = profile_info[7]
 

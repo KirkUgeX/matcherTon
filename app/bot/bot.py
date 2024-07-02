@@ -4,8 +4,11 @@ import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 from messages import welcome_message
+from dotenv import load_dotenv
+
 
 logging.basicConfig(level=logging.INFO)
+load_dotenv()
 token = os.getenv("BOT_TOKEN")
 bot = Bot(token=token)
 

@@ -41,7 +41,7 @@ async def get_all_messages(user_id, chat_id):
 
         return messages
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in receiving chat history :{str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error in receiving chat history: {str(e)}")
 
 
 async def create_chat(chat_name, chat_users):
@@ -125,7 +125,8 @@ async def send_message(user: Message):
             "reply_to": user.reply_to
         }
 
-        print(f"Attempting to connect to WebSocket: ws://localhost:1234/{str(oponent_uuid)}")  # f"ws://38.242.233.161:8765/{oponent_uuid}"
+        print(
+            f"Attempting to connect to WebSocket: ws://localhost:1234/{str(oponent_uuid)}")  # f"ws://38.242.233.161:8765/{oponent_uuid}"
         async with websockets.connect(f"ws://127.0.0.1:666/{str(oponent_uuid)}") as websocket:
             await websocket.send(json.dumps({"message_id": message_id, "message": message_data}))
             response = await websocket.recv()
@@ -138,11 +139,9 @@ async def send_message(user: Message):
 
 
 async def get_all_chats(user_id):
-
     load_dotenv()
     db = MessenggerDB()
     await db.connect()
-
 
     try:
         load_dotenv()
@@ -150,7 +149,6 @@ async def get_all_chats(user_id):
         await db_k.connect()
     except Exception as e:
         raise HTTPException(status_code=501, detail=f"DB connection error :{str(e)}")
-
 
     chat_list = await db.get_user_chats(user_id=user_id)
     new_chat_list = []
@@ -184,5 +182,3 @@ async def get_all_chats(user_id):
         }
         new_chat_list.append(chat_info)
     return new_chat_list
-
-

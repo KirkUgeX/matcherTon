@@ -357,10 +357,29 @@ class Database:
             user_uuid = await self.conn.fetchval("""
                 SELECT user_uuid FROM profiles WHERE address = $1
             """, wallet)
-            return user_uuid if user_uuid is not None else None
+            print(user_uuid)
+            return str(user_uuid) if user_uuid is not None else None
         except asyncpg.PostgresError as e:
             print("Error wallet user UUID:", e)
             return f"Error wallet user UUID: {e}"
+
+    async def get_tg_by_id(self, user_id):
+        try:
+            row = await self.conn.fetchrow("""
+                SELECT tg_userid, profilenickname FROM profiles WHERE id = $1
+            """, user_id)
+
+            if row is None:
+                return None, None
+
+            tg_userid = row["tg_userid"]
+            nickname = row["profilenickname"]
+            return [tg_userid, nickname]
+
+        except asyncpg.PostgresError as e:
+            print("Error retrieving user UUID:", e)
+            return f"Error retrieving user UUID: {e}"
+
 
 
 class DatabaseWL:

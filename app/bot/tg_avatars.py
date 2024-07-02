@@ -63,6 +63,6 @@ async def get_photo(user_id):
     for photo_id in photo_ids[:1]:
         photo_url = await get_photo_file(bot_token, photo_id)
         blob = await download_photo_as_base64(photo_url)
-        print(blob)
+        #print(blob)
 
         return blob

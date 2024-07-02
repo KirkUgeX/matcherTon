@@ -1,19 +1,16 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, BackgroundTasks
 from app.models import user as user_model
 from app.models.token import TokenData
-from app.models.chat import ChatCreation, GetAllMessages, Message
+from app.models.chat import ChatCreation, GetAllMessages
 from app.core.limiter import limiter
 from app.utils import uf
 from app.utils import recommendation_sys as rs
 from app.utils.html import escape_html
 from app.api.endpoints.auth import get_current_user, get_current_holder
-from app.utils.score import scoreBackground, scoreBackground_test
+from app.utils.score import scoreBackground
+import app.utils.nft_info_func  as nf
 from app.messenger.msg_functions import create_chat, get_all_messages, get_all_chats
-from slowapi.errors import RateLimitExceeded
-from starlette.responses import PlainTextResponse
-from starlette.status import HTTP_429_TOO_MANY_REQUESTS
-from bot import tg_avatars
-
+from app.bot import tg_avatars
 
 router = APIRouter()
 
@@ -23,12 +20,17 @@ router = APIRouter()
 async def request_add_user(request: Request, background_tasks: BackgroundTasks,
                            user: user_model.AddUserRequest = Body(...),
                            current_user: TokenData = Depends(get_current_user)) -> user_model.SuccessAndUuid:
+
+    print(user)
     try:
-        if not await uf.unique_address(escape_html(user.address)):
+        if  await uf.unique_address(escape_html(user.address))!= True:
+            print("if not await uf.unique_address(escape_html(user.address)):")
             raise HTTPException(status_code=409)
 
         socials = user.socials.dict()
+        print(socials)
         socials_links = await uf.prepend_links(socials)
+        print(type(socials_links), socials_links)
         for key, url_social in socials_links.items():
             if url_social == "invalid nickname in socials include link http or dot":
                 raise HTTPException(
@@ -42,10 +44,10 @@ async def request_add_user(request: Request, background_tasks: BackgroundTasks,
         nfts = [i.dict() for i in req_nfts]
 
         result = await uf.add_user(
-            escape_html(user.profile_nickname),
+            escape_html(user.profileNickname),
             escape_html(user.address),
             escape_html(socials),
-            escape_html(user.tags_sphere),
+            escape_html(user.tagsSphere),
             escape_html(work),
             escape_html(nfts),
             escape_html(user.description),
@@ -57,7 +59,7 @@ async def request_add_user(request: Request, background_tasks: BackgroundTasks,
             if "Error" in result:
                 raise HTTPException(status_code=500, detail=f"{str(result)}")
 
-        background_tasks.add_task(scoreBackground, escape_html(user.address), escape_html(user.tags_sphere),
+        background_tasks.add_task(scoreBackground, escape_html(user.address), escape_html(user.tagsSphere),
                                   result[2])
         print({"response": result[0], "user_uuid": result[1]})
         return {"response": str(result[0]), "user_uuid": result[1]}
@@ -261,6 +263,7 @@ async def chat_creator(request: Request, chat_model: ChatCreation):
 @router.post("/getAllMessages")
 @limiter.limit("10000/minute")
 async def get_chat_history(request: Request, user: GetAllMessages):
+    print("get_chat_history")
     return await get_all_messages(user_id=user.user_id, chat_id=user.chat_id)
 
 
@@ -277,6 +280,18 @@ async def AddNFTS(request: Request, user: user_model.AddNFTS = Body(...),
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error when adding nft, requestAddNFTS :{str(e)}")
 
+@router.post("/requestNFTgetALL")
+@limiter.limit("1000/minute")
+async def get_all_nfts(request: Request, user: user_model.NFTgetALL = Body(...),
+                       current_user: TokenData = Depends(get_current_user)) -> user_model.NFTgetALLResponse:
+    try:
+        nfts_data_all = nf.get_all_ton_nfts(escape_html(user.address))
+        if isinstance(nfts_data_all, str):
+            if "Error" in nfts_data_all:
+                raise HTTPException(status_code=500, detail=f"{nfts_data_all}")
+        return {"nfts": nfts_data_all}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error when receiving nft from Opensea's api :{str(e)}")
 
 """@router.exception_handler(RateLimitExceeded)
 async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):

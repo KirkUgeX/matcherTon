@@ -1,4 +1,8 @@
-from bot import bot, dp
+from aiogram import Bot, Dispatcher, types
+
+bot = Bot(token="7052722426:AAFa_pw1VCRlfcWiQUQkjIlwEJqREp11cbw")
+
+dp = Dispatcher()
 
 
 async def send_notice(user_id: int, message: str):

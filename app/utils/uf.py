@@ -4,6 +4,7 @@ import time
 import psycopg2
 import json
 from dotenv import load_dotenv
+from app.bot import messages, notices
 
 
 async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, description, tg_userId, avatar):
@@ -301,6 +302,7 @@ async def uuidFromWallet(wallet):
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
     res = await db.get_user_uuid_by_wallet(wallet)
+    print(type(res))
     return res
 
 
@@ -373,11 +375,28 @@ async def reaction_like_dislike(user_id, target_id, reaction_type):
             await increase_num_points(target_id, 100)
             matchJSON.append(target_id)
             res_data = await db.match_data_add(user_id, json.dumps(matchJSON))
+
+            user_tg_ = await get_telegram_id(user_id)
+            user_tg = user_tg_["tg_id"]
+
+            target_tg_ = await get_telegram_id(target_id)
+            target_tg = target_tg_["tg_id"]
+
+            await notices.send_notice(target_tg, messages.new_match)
+            await notices.send_notice(user_tg, messages.new_match)
+
             if isinstance(res_data, str):
                 if "Error" in res_data:
                     return res_data
             return "match"
         else:
+            username_ = await get_telegram_id(user_id)
+            username = username_["profilenickname"]
+
+            target_tg_ = await get_telegram_id(target_id)
+            target_tg = target_tg_["tg_id"]
+
+            await notices.send_notice(target_tg, messages.profile_like.replace("{username}", f"{username}"))
             return "nomatch"
     if reaction_type == 'dislike':
         return "nomatch"
@@ -503,3 +522,19 @@ async def get_nfts(user_id, picked_nfts_list):
     except Exception as e:
         print(f"Opensea get_nfts An unexpected Error occurred: {e}")
         return f"Opensea get_nfts An unexpected Error occurred: {e}"
+
+
+async def get_telegram_id(user_id):
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+
+    try:
+        tg_id, profilenickname = await db.get_tg_by_id(user_id)
+
+        return {"tg_id": tg_id, "profilenickname": profilenickname}
+    except Exception as e:
+        return "Cant get tg_id:" + str(e)

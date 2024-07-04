@@ -11,7 +11,7 @@ async def recomendSys_change(userID, score, achievements, madedata):
         await db.connect()
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
-    result = db.recomendSys_change_score_data(userID, score, achievements, madedata)
+    result = await db.recomendSys_change_score_data(userID, score, achievements, madedata)
     if isinstance(result, str):
         if "Error" in result:
             return result
@@ -42,7 +42,7 @@ async def add_random_user_rec_sys():
         'achievements': ["first"],
         'score': 123
     }
-    rec_sys = rs.RecSystem('recSystem/recData/recSystem_state.pkl')
+    rec_sys = rs.RecSystem('app/utils/recSystem/recData/recSystem_state.pkl')
     await rec_sys.async_init()
     await rec_sys.add_user(new_user)
 

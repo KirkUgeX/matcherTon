@@ -5,7 +5,7 @@ import psycopg2
 import json
 from dotenv import load_dotenv
 from app.bot import messages, notices
-
+from app.utils.recSystem.recomndation_sys_async import select_random_user_id
 
 async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, description, tg_userId, avatar):
     try:
@@ -102,72 +102,74 @@ async def get_all_user_info(userID):
         await db.connect()
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
+    try:
+        profile_info = await db.profile_show(
+            userID)
 
-    profile_info = await db.profile_show(
-        userID)
+        if isinstance(profile_info, str):
+            if "Error" in profile_info:
+                return profile_info
 
-    if isinstance(profile_info, str):
-        if "Error" in profile_info:
-            return profile_info
+        nfts_id = profile_info[7]
 
-    nfts_id = profile_info[7]
-    more_info_id = profile_info[8]
+        more_info_id = profile_info[8]
 
-    nfts_cor = await db.nfts_get(nfts_id)
+        nfts_cor = await db.nfts_get(nfts_id)
 
-    if nfts_cor[2] is not None and isinstance(nfts_cor[2], list):
-        nfts = nfts_cor[2]
-        if isinstance(nfts, str):
-            if "Error" in nfts:
-                return nfts
-    else:
-        nfts = []
-    more_info_cor = await db.recomendSys_data_get(userID)
-    more_info = more_info_cor[2:]
+        if nfts_cor[2] is not None and isinstance(nfts_cor[2], list):
+            nfts = nfts_cor[2]
+            if isinstance(nfts, str):
+                if "Error" in nfts:
+                    return nfts
+        else:
+            nfts = []
+        more_info_cor = await db.recomendSys_data_get(userID)
+        more_info = more_info_cor[2:]
 
-    if isinstance(more_info, str):
-        if "Error" in more_info:
-            return more_info
+        if isinstance(more_info, str):
+            if "Error" in more_info:
+                return more_info
 
-    score = more_info[0] if more_info[0] is not None else 0
-    if more_info[1] is not None and isinstance(more_info[1], list):
-        achievements = more_info[1]
-    else:
-        achievements = []
+        score = more_info[0] if more_info[0] is not None else 0
+        if more_info[1] is not None and isinstance(more_info[1], list):
+            achievements = more_info[1]
+        else:
+            achievements = []
 
-    print(more_info)
+        print(more_info)
 
-    #print(profile_info)
-    print(nfts, more_info)
-    print(profile_info[2])
+        #print(profile_info)
+        print(nfts, more_info)
+        print(profile_info[2])
 
-    socials_dict = json.loads(profile_info['socials'])
-    tags_sphere_list = json.loads(profile_info['tagssphere'])
-    work_dict = json.loads(profile_info['work'])
+        socials_dict = json.loads(profile_info['socials'])
+        tags_sphere_list = json.loads(profile_info['tagssphere'])
+        work_dict = json.loads(profile_info['work'])
 
-    data = {
-        "nickname": profile_info['profilenickname'],
-        "address": profile_info['address'],
-        "socialLinks": {
-            "x": socials_dict.get('x', ''),
-            "linkedin": socials_dict.get('linkedin', ''),
-            "tg": socials_dict.get('telegram', '')
-        },
-        "tagsSphere": tags_sphere_list,
-        "work": {"position": work_dict['position'], "company": work_dict['company']},
-        "ban": profile_info['banstatus'],
-        "mute": profile_info['mutestatus'],
-        "nfts": nfts,
-        "score": score,
-        "achievements": achievements,
-        "description": profile_info['description'],
-        "points": profile_info['points'],
-        "tg_userid": profile_info['tg_userid'],
-        "avatar": profile_info['avatar']
-    }
+        data = {
+            "nickname": profile_info['profilenickname'],
+            "address": profile_info['address'],
+            "socialLinks": {
+                "x": socials_dict.get('x', ''),
+                "linkedin": socials_dict.get('linkedin', ''),
+                "tg": socials_dict.get('telegram', '')
+            },
+            "tagsSphere": tags_sphere_list,
+            "work": {"position": work_dict['position'], "company": work_dict['company']},
+            "ban": profile_info['banstatus'],
+            "mute": profile_info['mutestatus'],
+            "nfts": nfts,
+            "score": score,
+            "achievements": achievements,
+            "description": profile_info['description'],
+            "points": profile_info['points'],
+            "tg_userid": profile_info['tg_userid'],
+            "avatar": profile_info['avatar']
+        }
 
-    return data
-
+        return data
+    except Exception as e:
+        print(e,userID)
 
 async def get_min_user_info(userID):
     try:
@@ -373,6 +375,7 @@ async def reaction_like_dislike(user_id, target_id, reaction_type):
         if result:
             await increase_num_points(user_id, 100)
             await increase_num_points(target_id, 100)
+            print("MATCH!!!",matchJSON, target_id)
             matchJSON.append(target_id)
             res_data = await db.match_data_add(user_id, json.dumps(matchJSON))
 
@@ -427,7 +430,11 @@ async def all_matches(user_id):
             nicname = profile_info['profilenickname']
             nfts_id = profile_info['nfts']
             nfts_rec = await db.nfts_get(nfts_id)
-            nfts = json.loads(nfts_rec['nftsjson'])[0]
+            nfts = json.loads(nfts_rec['nftsjson'])
+            if nfts==[]:
+                nfts=None
+            else:
+                nfts = nfts[0]
             if isinstance(nfts, str):
                 if "Error" in nfts:
                     return nfts
@@ -478,7 +485,7 @@ async def check_reaction(user_id, target_id):
         return "Connection Error occurred:" + str(e)
 
     likeJSON = await db.recomendSys_data_get(target_id)
-    likeJSON = likeJSON['likejson']
+    likeJSON = json.loads(likeJSON['likejson'])
     if isinstance(likeJSON, str):
         if "Error" in likeJSON:
             return likeJSON

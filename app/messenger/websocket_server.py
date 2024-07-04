@@ -135,11 +135,12 @@ async def chat_server(websocket: WebSocketServerProtocol, path: str):
 
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain(certfile="fullchain.pem", keyfile="privkey.pem")
-wss_host = os.getenv("WSS_SER")
-wss_port = os.getenv("WSS_PORT")
+load_dotenv()
+wss_host = "185.192.247.248" # os.getenv("WSS_SER")
+wss_port = 8765 # os.getenv("WSS_PORT")
 
 start_server = websockets.serve(chat_server, wss_host, wss_port, ssl=ssl_context)
-print(f"Websocket server started and listening on wss://38.242.233.161:8765")
+print(f"Websocket server started and listening on wss://{wss_host}:{wss_port}")
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

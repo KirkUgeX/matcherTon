@@ -74,6 +74,7 @@ class Database:
                         SELECT id FROM profiles WHERE address = $1
                     """, wallet)
             if result:
+                print('result',result)
                 return result['id']
             return None
         except asyncpg.PostgresError as e:
@@ -184,14 +185,14 @@ class Database:
 
     async def recomendSys_change_score_data(self, userID, score, achievements, madedata):
         try:
-            await self.cur.execute("""
+            await self.conn.execute("""
                 UPDATE recomendSys
-                SET score = %s,
-                    achievements = %s,
-                    madedata = %s   
-                WHERE userid = %s
-            """, (score, achievements, madedata, userID))
-            self.conn.commit()
+                SET score = $1,
+                    achievements = $2,
+                    madedata = $3   
+                WHERE userid = $4 
+            """, score, achievements, madedata, userID)
+
             return 200
         except asyncpg.PostgresError as e:
             print("Error updating recommendation system entry's user ID:", e)

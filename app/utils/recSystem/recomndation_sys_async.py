@@ -141,7 +141,7 @@ class RecSystem:
 
         # Проверяем, получилось ли найдти достаточное количество рекомендаций
         if len(recommendations) < num_of_recommendation:
-            return "No available user IDs."  # Или можно возвратить какое-то специальное значение или сообщение
+            return None  # Или можно возвратить какое-то специальное значение или сообщение
         return recommendations
 
 
@@ -149,7 +149,7 @@ async def select_random_user_id(user_ids, interaction_history):
     # Фильтруем список user_ids, исключая ID, которые уже есть в interaction_history
     available_user_ids = [user_id for user_id in user_ids if user_id not in interaction_history]
     if not available_user_ids:
-        return "No available user IDs."
+        return None
 
     return random.choice(available_user_ids)
 

@@ -145,7 +145,7 @@ class getAllMatches(BaseModel):
 class Match(BaseModel):
     user_id: int
     nick: str
-    NFT: NFT
+    NFT: NFT | None
 
 
 class getAllMatchesResponse(BaseModel):

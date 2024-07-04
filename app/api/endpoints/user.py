@@ -215,6 +215,7 @@ async def get_AllMatches(request: Request,
 
         return mtchs
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail=f"{e}")
 
 

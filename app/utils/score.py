@@ -18,7 +18,7 @@ async def scoreBackground(address, tagSphere, user_id):
     score, achievements, madedata = score_data['score']['score'], json.dumps(
         score_data['score']['achievement']), time.time()
 
-    more_info_id = await uf.recomendSys_change(user_id, score, achievements, madedata)
+    more_info_id = await rs.recomendSys_change(user_id, score, achievements, madedata)
     if isinstance(more_info_id, str):
         if "Error" in more_info_id:
             return more_info_id
@@ -28,7 +28,7 @@ async def scoreBackground(address, tagSphere, user_id):
         'achievements': achievements,
         'score': score
     }
-    rec_sys = RecSystem('recSystem/recData/recSystem_state.pkl')
+    rec_sys = RecSystem('app/utils/recSystem/recData/recSystem_state.pkl')
     await rec_sys.async_init()
     await rec_sys.add_user(new_user)
 

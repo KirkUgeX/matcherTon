@@ -61,7 +61,7 @@ async def generate_token(form_data: OAuthData):
     access_token = await create_access_token(
         data={"sub": address, "user_id": user_id, "uuid": uuid_wall}, expires_delta=access_token_expires
     )
-    #print({"sub": address, "user_id": user_id, "uuid": uuid_wall})
+    print({"sub": address, "user_id": user_id, "uuid": uuid_wall})
     return {"access_token": access_token, "token_type": "bearer"}
 
 

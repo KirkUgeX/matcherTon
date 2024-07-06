@@ -398,8 +398,10 @@ async def reaction_like_dislike(user_id, target_id, reaction_type):
 
             target_tg_ = await get_telegram_id(target_id)
             target_tg = target_tg_["tg_id"]
-
-            await notices.send_notice(target_tg, messages.profile_like.replace("{username}", f"{username}"))
+            target_lang = await get_user_lang(target_tg)
+            await notices.send_notice(target_tg,
+                                      messages.profile_like.replace("{username}", f"{username}"),
+                                      language=target_lang)
             return "nomatch"
     if reaction_type == 'dislike':
         return "nomatch"
@@ -545,3 +547,32 @@ async def get_telegram_id(user_id):
         return {"tg_id": tg_id, "profilenickname": profilenickname}
     except Exception as e:
         return "Cant get tg_id:" + str(e)
+
+
+async def add_tg_user(tg_id: int, language: str):
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    try:
+        await db.add_bot_user(tg_id, language)
+        return 200
+    except Exception as e:
+        return "error when adding a user:" + str(e)
+
+
+async def get_user_lang(tg_id: int) -> str:
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    try:
+        lang = await db.get_user_lang(tg_id)
+        return lang
+    except Exception as e:
+        return "error when getting tg_id:" + str(e)
+

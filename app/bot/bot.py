@@ -6,6 +6,7 @@ from aiogram.filters.command import Command
 import messages as msp
 import keyboard as kb
 from dotenv import load_dotenv
+from ..utils import uf
 
 logging.basicConfig(level=logging.INFO)
 load_dotenv()
@@ -17,7 +18,24 @@ dp = Dispatcher()
 
 @dp.message(Command("start"))
 async def cmd_random(message: types.Message):
-    await message.answer(text=msp.choose_language, reply_markup=kb.settings)
+    user_id = message.from_user.id
+    print(user_id)
+    user_lang = message.from_user.language_code
+    await uf.add_tg_user(user_id, user_lang)
+    if user_lang == "ru":
+        await uf.add_tg_user(user_id, language="ru")
+        await message.answer(text=msp.welcome_message_ru, reply_markup=kb.main_ru)
+    elif user_lang == "uk":
+        await uf.add_tg_user(user_id, language="uk")
+        await message.answer(text=msp.welcome_message_ua, reply_markup=kb.main_ua)
+    else:
+        await uf.add_tg_user(user_id, language="en")
+        await message.answer(text=msp.welcome_message, reply_markup=kb.main_en)
+
+
+"""@dp.message(Command("start"))
+async def cmd_random(message: types.Message):
+    await message.answer(text=msp.choose_language, reply_markup=kb.settings)"""
 
 
 @dp.callback_query(F.data == "en")

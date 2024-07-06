@@ -37,9 +37,18 @@ new_match = """New match found!
    🎉 Congratulations! You have a new match. Check your match list to see who it is.
 """
 
+new_match_ru = """New Match!
+   🎉 Поздравляем! У вас новый мэтч! Зайдите в приложение чтобы сразу начать нетворкинг.
+"""
+
 new_message = "New message from {username}\n💬 You have a new message from {username}. Open the chat to read it."
 
+new_message_ru = "💬 У вас одно новое сообщение от {username}!"
+
 profile_like = "Someone likes your profile!\n👍 {username} liked your profile. Check out their profile to like back."
+
+profile_like_ru = "Кому-то понравился ваш профиль!\n👍 {username} понравился ваш профиль. Посмотрите их профиль, чтобы лайкнуть в ответ."
+
 
 new_profiles = """Check out new profiles  
    🚀 New users have joined Matcher. Browse their profiles – you might find your ideal match among them."""

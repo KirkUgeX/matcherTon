@@ -381,6 +381,28 @@ class Database:
             print("Error retrieving user UUID:", e)
             return f"Error retrieving user UUID: {e}"
 
+    async def add_bot_user(self, tg_id: int, language: str):
+        try:
+            await self.conn.execute("""
+                INSERT INTO tg_bot (tg_id, language)
+                VALUES ($1, $2)
+                ON CONFLICT (tg_id) DO NOTHING
+            """, tg_id, language)
+            return 200
+        except asyncpg.PostgresError as e:
+            print("Error adding user:", e)
+            return f"Error DB adding user: {e}"
+
+    async def get_user_lang(self, tg_id: int) -> str:
+        try:
+            user_lang = await self.conn.fetchval("""
+                SELECT language FROM tg_bot WHERE tg_id = $1
+            """, tg_id)
+            return user_lang
+        except asyncpg.PostgresError as e:
+            print("Error getting user lang:", e)
+            return f"Error getting user lang: {e}"
+
 
 
 class DatabaseWL:

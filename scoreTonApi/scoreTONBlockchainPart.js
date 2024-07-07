@@ -30,7 +30,7 @@ async function getInfo(wallet_address) {
 }
 
 async function getNFTs(wallet_address){
-    let token = 'AFORT5MZSTSVUAAAAAABDSGS2POTR3CCFKDA4FVSPIZ3SCHHGZ2XCZUQ2L2KW54NHHBHGGA';
+    let token = 'your-token';
     let url = 'https://tonapi.io/v2/accounts/'+wallet_address+'/nfts?limit=1000';
     try {
             const response = await fetch(url, {
@@ -57,7 +57,7 @@ async function getScore(wallet_address) {
     await sleep(1000);
     let default_url = 'https://tonapi.io/v2/accounts/' + info[1] + '/events?limit=100';
     let url=default_url;
-    let token = 'AFORT5MZSTSVUAAAAAABDSGS2POTR3CCFKDA4FVSPIZ3SCHHGZ2XCZUQ2L2KW54NHHBHGGA';
+    let token = 'your-token';
     let volumeTotal = 0;
     let hasNextPage = true;
     let beforeLt = null;
@@ -268,7 +268,7 @@ function calculateVolume(events) {
             }
         });
     });
-    //console.log("volume ",totalIn/ 1e9,totalOut/ 1e9)
+    
     return {
         totalIn: totalIn / 1e9,
         totalOut: totalOut / 1e9,
@@ -363,14 +363,5 @@ function nft_to_score(x) {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-// Проверка значений при разных x
-//const yAtX0 = volume_to_score(100);
-//const yAtX5000 = volume_to_score(400);
-//const yAtX10000 = volume_to_score(10000);
-//const yAtXMoreThan10000 = volume_to_score(20000);
 
-//console.log('y при x = 100:', yAtX0);
-//console.log('y при x = 5000:', yAtX5000);
-//console.log('y при x = 10000:', yAtX10000);
-//console.log('y при x > 10000:', yAtXMoreThan10000);
 module.exports = { getScore };

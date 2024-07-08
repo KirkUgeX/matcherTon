@@ -57,7 +57,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   return (
     <Layout
       title={`Pick avatar from your Wallet`}
-      subtext={"And that's all!"}
+      subtext={"Or Skip it And that's all!"}
       onBackClick={onBackButtonClick}
       forwardButtonText={"Let's meet"}
       // forwardButtonText={

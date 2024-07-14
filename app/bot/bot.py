@@ -18,35 +18,66 @@ dp = Dispatcher()
 
 
 @dp.message(Command("start"))
+@dp.callback_query(F.data == "back_not_reg")
 async def cmd_random(message: types.Message):
     user_id = message.from_user.id
-    print(user_id)
     user_lang = message.from_user.language_code
-    await uf.add_tg_user(user_id, user_lang)
-    if user_lang == "ru":
-        await uf.add_tg_user(user_id, language="ru")
-        await message.answer(text=msp.welcome_message_ru, reply_markup=kb.main_ru)
-    elif user_lang == "uk":
-        await uf.add_tg_user(user_id, language="uk")
-        await message.answer(text=msp.welcome_message_ua, reply_markup=kb.main_ua)
+
+    start_comand = message.text
+    referrer_id = str(start_comand[7:])
+
+    if referrer_id == '':
+        referrer_id = None
     else:
-        await uf.add_tg_user(user_id, language="en")
+        referrer_id = int(referrer_id)
+
+    if user_lang == "ru":
+        await uf.add_tg_user(referrer_id=referrer_id, tg_id=user_id, language="ru")
+        await message.answer(text=msp.welcome_message_ru, reply_markup=kb.main_ru)
+        if referrer_id is not None:
+            await bot.send_message(chat_id=referrer_id, text=msp.ref_message_ru)
+
+    elif user_lang == "uk":
+        await uf.add_tg_user(referrer_id=referrer_id, tg_id=user_id, language="uk")
+        await message.answer(text=msp.welcome_message_ua, reply_markup=kb.main_ua)
+        if referrer_id is not None:
+            await bot.send_message(chat_id=referrer_id, text=msp.ref_message_uk)
+    else:
+        await uf.add_tg_user(referrer_id=referrer_id, tg_id=user_id, language="en")
         await message.answer(text=msp.welcome_message, reply_markup=kb.main_en)
+        if referrer_id is not None:
+            await bot.send_message(chat_id=referrer_id, text=msp.ref_message_en)
 
 
 @dp.callback_query(F.data == "back_from_ref")
 @dp.callback_query(F.data == "get_bonus")
 async def ref_menu(callback: types.CallbackQuery):
     user_lang = callback.from_user.language_code
-    if user_lang == "ru":
-        await callback.message.edit_text(text=msp.ref_screen_ru,
-                                         reply_markup=kb.referal_inline_kb_ru)
-    elif user_lang == "uk":
-        await callback.message.edit_text(text=msp.ref_screen_uk,
-                                         reply_markup=kb.referal_inline_kb_ru)
+    user_id = callback.from_user.id
+    user_registred = await uf.tg_id_cheker(user_id)
+
+    if user_registred:
+
+        if user_lang == "ru":
+            await callback.message.edit_text(text=msp.ref_screen_ru,
+                                             reply_markup=kb.referal_inline_kb_ru)
+        elif user_lang == "uk":
+            await callback.message.edit_text(text=msp.ref_screen_uk,
+                                             reply_markup=kb.referal_inline_kb_ru)
+        else:
+            await callback.message.edit_text(text=msp.ref_screen_en,
+                                             reply_markup=kb.referal_inline_kb_en)
+
     else:
-        await callback.message.edit_text(text=msp.ref_screen_en,
-                                         reply_markup=kb.referal_inline_kb_en)
+        if user_lang == "ru":
+            await callback.message.edit_text(text=msp.not_reg_ru,
+                                             reply_markup=kb.back_not_reg_ru)
+        elif user_lang == "uk":
+            await callback.message.edit_text(text=msp.not_reg_uk,
+                                             reply_markup=kb.back_not_reg_uk)
+        else:
+            await callback.message.edit_text(text=msp.not_reg_en,
+                                             reply_markup=kb.back_not_reg_en)
 
 
 @dp.callback_query(F.data == "back")
@@ -78,8 +109,6 @@ async def gen_referral_link(callback: types.CallbackQuery):
             text=msp.ref_link_en.replace("{url}", f"https://t.me/{bot_nickname}?start={callback.from_user.id}"),
             reply_markup=kb.back_en
         )
-
-
 
 
 async def main():

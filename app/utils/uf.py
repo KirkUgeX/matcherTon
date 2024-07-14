@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from app.bot import messages, notices
 from app.utils.recSystem.recomndation_sys_async import select_random_user_id
 
+
 async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, description, tg_userId, avatar):
     try:
         load_dotenv()
@@ -138,7 +139,7 @@ async def get_all_user_info(userID):
 
         print(more_info)
 
-        #print(profile_info)
+        # print(profile_info)
         print(nfts, more_info)
         print(profile_info[2])
 
@@ -169,7 +170,8 @@ async def get_all_user_info(userID):
 
         return data
     except Exception as e:
-        print(e,userID)
+        print(e, userID)
+
 
 async def get_min_user_info(userID):
     try:
@@ -375,7 +377,7 @@ async def reaction_like_dislike(user_id, target_id, reaction_type):
         if result:
             await increase_num_points(user_id, 100)
             await increase_num_points(target_id, 100)
-            print("MATCH!!!",matchJSON, target_id)
+            print("MATCH!!!", matchJSON, target_id)
             matchJSON.append(target_id)
             res_data = await db.match_data_add(user_id, json.dumps(matchJSON))
 
@@ -433,8 +435,8 @@ async def all_matches(user_id):
             nfts_id = profile_info['nfts']
             nfts_rec = await db.nfts_get(nfts_id)
             nfts = json.loads(nfts_rec['nftsjson'])
-            if nfts==[]:
-                nfts=None
+            if nfts == []:
+                nfts = None
             else:
                 nfts = nfts[0]
             if isinstance(nfts, str):
@@ -549,7 +551,7 @@ async def get_telegram_id(user_id):
         return "Cant get tg_id:" + str(e)
 
 
-async def add_tg_user(tg_id: int, language: str):
+async def add_tg_user(tg_id: int, language: str, referrer_id):
     try:
         load_dotenv()
         db = Database()
@@ -557,8 +559,22 @@ async def add_tg_user(tg_id: int, language: str):
     except psycopg2.Error as e:
         return "Connection Error occurred:" + str(e)
     try:
-        await db.add_bot_user(tg_id, language)
+        await db.add_bot_user(tg_id, language, referrer_id)
         return 200
+    except Exception as e:
+        return "error when adding a user:" + str(e)
+
+
+async def tg_id_cheker(tg_id: int) -> bool:
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    try:
+        res = await db.check_user_exists(tg_id)
+        return res
     except Exception as e:
         return "error when adding a user:" + str(e)
 
@@ -575,4 +591,3 @@ async def get_user_lang(tg_id: int) -> str:
         return lang
     except Exception as e:
         return "error when getting tg_id:" + str(e)
-

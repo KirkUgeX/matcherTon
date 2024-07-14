@@ -8,6 +8,18 @@ settings = InlineKeyboardMarkup(inline_keyboard=[
      InlineKeyboardButton(text="🇺🇦UA", callback_data="ua")]
 ])
 
+back_not_reg_ru = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Назад", callback_data="back_not_reg")]
+])
+
+back_not_reg_en = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Back", callback_data="back_not_reg")]
+])
+
+back_not_reg_uk = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text="Відступіть", callback_data="back_not_reg")]
+])
+
 back_ru = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text="Назад", callback_data="back_from_ref")]
 ])

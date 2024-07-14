@@ -56,3 +56,37 @@ new_profiles = """Check out new profiles
 choose_language = """🔗 Welcome to Matcher! 🌐
 
 🌍 Choose your language:"""
+
+ref_link_ru = """💰Твоя реферальная ссылка:
+
+{url}
+
+Поделитесь ею с друзьями, коллегами и в социальных сетях, чтобы начать накапливать монеты прямо сейчас!👥"""
+
+ref_link_uk = """💰Твоє реферальне посилання:
+
+{url}
+
+Поділіться ним із друзями, колегами та в соціальних мережах, щоб почати накопичувати монети просто зараз!👥"""
+
+ref_link_en = """💰Your referral link:
+
+{url}
+
+Share it with your friends, coworkers and on social media to start accumulating coins now! 👥"""
+
+ref_screen_ru = """🔗 Присоединяйтесь к нашей реферальной системе и зарабатывайте монеты! 💰
+
+Мы рады представить вам нашу реферальную систему, которая поможет вам накапливать монеты, приглашая своих друзей и коллег в Matcher. Это отличная возможность не только расширить свою сеть контактов в Web3, но и заработать дополнительные бонусы за свою активность!"""
+
+ref_screen_en = """🔗 Join our referral system and earn coins! 💰
+
+We are pleased to introduce you to our referral system, which will help you accumulate coins by inviting your friends and colleagues to Matcher. This is a great opportunity to not only expand your network of contacts in Web3, but also earn extra bonuses for your activity!"""
+
+ref_screen_uk = """🔗 Приєднуйтесь до нашої реферальної системи і заробляйте монети! 💰
+
+Ми раді представити вам нашу реферальну систему, яка допоможе вам накопичувати монети, запрошуючи своїх друзів і колег у Matcher. Це чудова можливість не тільки розширити свою мережу контактів у Web3, а й заробити додаткові бонуси за свою активність!"""
+
+ref_friends = """Самые активные друзья:
+
+{friends}"""

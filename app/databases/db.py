@@ -51,7 +51,7 @@ class Database:
                 INSERT INTO profiles (profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,description,points, user_uuid,tg_userid,avatar)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id
             """, profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info, description, 0,
-                                                   str(user_uuid), tg_userID, avatar)
+                  str(user_uuid), tg_userID, avatar)
             return inserted_id, user_uuid
         except asyncpg.PostgresError as e:
             print("Error creating profile:", e)
@@ -74,7 +74,7 @@ class Database:
                         SELECT id FROM profiles WHERE address = $1
                     """, wallet)
             if result:
-                print('result', result)
+                print('result',result)
                 return result['id']
             return None
         except asyncpg.PostgresError as e:
@@ -384,10 +384,10 @@ class Database:
     async def add_bot_user(self, tg_id: int, language: str, referrer_id):
         try:
             await self.conn.execute("""
-                INSERT INTO tg_bot (tg_id, language, referrer_id)
-                VALUES ($1, $2, $3)
-                ON CONFLICT (tg_id) DO NOTHING
-            """, tg_id, language, referrer_id)
+                   INSERT INTO tg_bot (tg_id, language, referrer_id)
+                   VALUES ($1, $2, $3)
+                   ON CONFLICT (tg_id) DO NOTHING
+               """, tg_id, language, referrer_id)
             return 200
         except asyncpg.PostgresError as e:
             print("Error adding user:", e)
@@ -396,8 +396,8 @@ class Database:
     async def check_user_exists(self, tg_userid: int) -> bool:
         try:
             result = await self.conn.fetchval("""
-                SELECT EXISTS(SELECT 1 FROM profiles WHERE tg_userid = $1)
-            """, tg_userid)
+                   SELECT EXISTS(SELECT 1 FROM profiles WHERE tg_userid = $1)
+               """, tg_userid)
             return result
         except asyncpg.PostgresError as e:
             print("Error checking user:", e)
@@ -424,7 +424,6 @@ class Database:
         except asyncpg.PostgresError as e:
             print("Error retrieving user ID:", e)
             return f"Error retrieving user ID: {e}"
-
 
 class DatabaseWL:
     def __init__(self):

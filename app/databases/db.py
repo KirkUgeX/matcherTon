@@ -51,7 +51,7 @@ class Database:
                 INSERT INTO profiles (profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info,description,points, user_uuid,tg_userid,avatar)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id
             """, profileNickname, signupDate, address, socials, tagsSphere, work, nfts, more_info, description, 0,
-                  str(user_uuid), tg_userID, avatar)
+                                                   str(user_uuid), tg_userID, avatar)
             return inserted_id, user_uuid
         except asyncpg.PostgresError as e:
             print("Error creating profile:", e)
@@ -74,7 +74,7 @@ class Database:
                         SELECT id FROM profiles WHERE address = $1
                     """, wallet)
             if result:
-                print('result',result)
+                print('result', result)
                 return result['id']
             return None
         except asyncpg.PostgresError as e:
@@ -412,6 +412,19 @@ class Database:
         except asyncpg.PostgresError as e:
             print("Error getting user lang:", e)
             return f"Error getting user lang: {e}"
+
+    async def get_id_by_tg(self, tg_userid):
+        try:
+            key_id = await self.conn.fetchval("""
+                SELECT id FROM profiles WHERE tg_userid = $1
+            """, tg_userid)
+
+            return key_id
+
+        except asyncpg.PostgresError as e:
+            print("Error retrieving user ID:", e)
+            return f"Error retrieving user ID: {e}"
+
 
 class DatabaseWL:
     def __init__(self):

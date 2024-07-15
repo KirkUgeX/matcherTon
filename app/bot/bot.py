@@ -36,17 +36,24 @@ async def cmd_random(message: types.Message):
         await message.answer(text=msp.welcome_message_ru, reply_markup=kb.main_ru)
         if referrer_id is not None:
             await bot.send_message(chat_id=referrer_id, text=msp.ref_message_ru)
+            referrer_key = await uf.get_id_by_tgid(referrer_id)
+            await uf.increase_num_points(referrer_key, 500)
 
     elif user_lang == "uk":
         await uf.add_tg_user(referrer_id=referrer_id, tg_id=user_id, language="uk")
         await message.answer(text=msp.welcome_message_ua, reply_markup=kb.main_ua)
         if referrer_id is not None:
             await bot.send_message(chat_id=referrer_id, text=msp.ref_message_uk)
+            referrer_key = await uf.get_id_by_tgid(referrer_id)
+            await uf.increase_num_points(referrer_key, 500)
+
     else:
         await uf.add_tg_user(referrer_id=referrer_id, tg_id=user_id, language="en")
         await message.answer(text=msp.welcome_message, reply_markup=kb.main_en)
         if referrer_id is not None:
             await bot.send_message(chat_id=referrer_id, text=msp.ref_message_en)
+            referrer_key = await uf.get_id_by_tgid(referrer_id)
+            await uf.increase_num_points(referrer_key, 500)
 
 
 @dp.callback_query(F.data == "back_from_ref")

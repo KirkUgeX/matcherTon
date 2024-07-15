@@ -591,3 +591,17 @@ async def get_user_lang(tg_id: int) -> str:
         return lang
     except Exception as e:
         return "error when getting tg_id:" + str(e)
+
+
+async def get_id_by_tgid(tg_ig: int) -> int:
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    try:
+        key_id = await db.get_id_by_tg(tg_ig)
+        return key_id
+    except Exception as e:
+        return "error when getting id:" + str(e)

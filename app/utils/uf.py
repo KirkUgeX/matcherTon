@@ -6,6 +6,10 @@ import json
 from dotenv import load_dotenv
 from app.bot import messages, notices
 from app.utils.recSystem.recomndation_sys_async import select_random_user_id
+import os
+import base64
+from datetime import datetime, timedelta
+
 
 async def add_user(profileNickname, address, socials, tagsSphere, work, nfts, description, tg_userId, avatar):
     try:
@@ -74,7 +78,39 @@ async def increase_num_points(id, add_points):
         if "Error" in points:
             return points
 
+async def num_points(id):
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    points = await db.read_num_points(id)
+    if isinstance(points, str):
+        if "Error" in points:
+            return points
+    return points
+async def num_swipes(id):
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    data = await db.recomendSys_data_get(id)
+    if isinstance(data, str):
+        if "Error" in data:
+            return data
+    reaction_data = json.loads(data[5]) + json.loads(data[6])
+    today = datetime.now()
+    start_of_day = datetime(today.year, today.month, today.day)
+    end_of_day = start_of_day + timedelta(days=1)
 
+    count = sum(
+        start_of_day.timestamp() <= timestamp <= end_of_day.timestamp()
+        for _, timestamp in reaction_data
+    )
+    return count
 async def prepend_links(socials):
     # Defining basic URLs for social networks
     base_urls = {
@@ -138,21 +174,28 @@ async def get_all_user_info(userID):
 
         print(more_info)
 
-        #print(profile_info)
-        print(nfts, more_info)
-        print(profile_info[2])
+        # print(profile_info)
+
 
         socials_dict = json.loads(profile_info['socials'])
         tags_sphere_list = json.loads(profile_info['tagssphere'])
         work_dict = json.loads(profile_info['work'])
+        print("telegram",socials_dict )
+        x= socials_dict.get('x', '')
+        linkedin = socials_dict.get('linkedin', '')
+        telegram=socials_dict.get('telegram', '').replace("@","")
+        if x=="https://twitter.com/":
+            x=None
+        if linkedin=='https://www.linkedin.com/in/':
+            linkedin=None
 
         data = {
             "nickname": profile_info['profilenickname'],
             "address": profile_info['address'],
             "socialLinks": {
-                "x": socials_dict.get('x', ''),
-                "linkedin": socials_dict.get('linkedin', ''),
-                "tg": socials_dict.get('telegram', '')
+                "x": x,
+                "linkedin": linkedin,
+                "telegram": telegram
             },
             "tagsSphere": tags_sphere_list,
             "work": {"position": work_dict['position'], "company": work_dict['company']},
@@ -169,7 +212,8 @@ async def get_all_user_info(userID):
 
         return data
     except Exception as e:
-        print(e,userID)
+        print(e, userID)
+
 
 async def get_min_user_info(userID):
     try:
@@ -375,9 +419,15 @@ async def reaction_like_dislike(user_id, target_id, reaction_type):
         if result:
             await increase_num_points(user_id, 100)
             await increase_num_points(target_id, 100)
-            print("MATCH!!!",matchJSON, target_id)
-            matchJSON.append(target_id)
-            res_data = await db.match_data_add(user_id, json.dumps(matchJSON))
+            print("MATCH!!!", matchJSON, target_id)
+            print(matchJSON)
+            user_json = matchJSON.copy()
+            user_json.append(target_id)
+            res_data = await db.match_data_add(user_id, json.dumps(user_json))
+
+            target_json = matchJSON.copy()
+            target_json.append(user_id)
+            res_data_target = await db.match_data_add(target_id, json.dumps(target_json))
 
             user_tg_ = await get_telegram_id(user_id)
             user_tg = user_tg_["tg_id"]
@@ -385,12 +435,12 @@ async def reaction_like_dislike(user_id, target_id, reaction_type):
             target_tg_ = await get_telegram_id(target_id)
             target_tg = target_tg_["tg_id"]
 
-            await notices.send_notice(target_tg, messages.new_match)
-            await notices.send_notice(user_tg, messages.new_match)
+            await notices.send_notice(target_tg, "new_match", None)
+            await notices.send_notice(user_tg, "new_match", None)
 
-            if isinstance(res_data, str):
-                if "Error" in res_data:
-                    return res_data
+            if isinstance(res_data, str) and isinstance(res_data_target, str):
+                if "Error" in res_data or "Error" in res_data_target:
+                    return res_data, res_data_target
             return "match"
         else:
             username_ = await get_telegram_id(user_id)
@@ -399,7 +449,7 @@ async def reaction_like_dislike(user_id, target_id, reaction_type):
             target_tg_ = await get_telegram_id(target_id)
             target_tg = target_tg_["tg_id"]
 
-            await notices.send_notice(target_tg, messages.profile_like.replace("{username}", f"{username}"))
+            await notices.send_notice(target_tg, "profile_like", username)
             return "nomatch"
     if reaction_type == 'dislike':
         return "nomatch"
@@ -417,8 +467,8 @@ async def all_matches(user_id):
         if "Error" in recomendSys_data:
             return recomendSys_data
     if recomendSys_data:
-        match_data = json.loads(recomendSys_data['matchjson'])
-        matchJSON = match_data
+        match_data = json.loads(recomendSys_data.get("matchjson", "[]"))
+        matchJSON = match_data if match_data is not None else []
         matchUserList = []
         for user in matchJSON:
             profile_info = await db.profile_show(
@@ -427,12 +477,25 @@ async def all_matches(user_id):
             if isinstance(profile_info, str):
                 if "Error" in profile_info:
                     return profile_info
-            nicname = profile_info['profilenickname']
+            print("profile_info",profile_info,user,matchJSON)
+            nicname = profile_info.get('profilenickname', '[]')
             nfts_id = profile_info['nfts']
+            id = profile_info['id']
             nfts_rec = await db.nfts_get(nfts_id)
             nfts = json.loads(nfts_rec['nftsjson'])
-            if nfts==[]:
-                nfts=None
+            if nfts == []:
+                link=f"https://matcher.fun/get_image/{id}.png"
+                if await check_file_exists(str(id) + ".png"):
+                    nfts = {"name":"ds",
+                            "image_url": link,
+                            "opensea_url":link
+                    }
+                else:
+                    print(await save_image(f"{id}.png", profile_info[15]))
+                    nfts = {"name":"ds",
+                            "image_url": link,
+                            "opensea_url":link
+                    }
             else:
                 nfts = nfts[0]
             if isinstance(nfts, str):
@@ -545,3 +608,89 @@ async def get_telegram_id(user_id):
         return {"tg_id": tg_id, "profilenickname": profilenickname}
     except Exception as e:
         return "Cant get tg_id:" + str(e)
+
+
+async def add_tg_user(tg_id: int, language: str, referrer_id) -> bool:
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    try:
+        if not await db.check_tg_id_exists(tg_id):
+            await db.add_bot_user(tg_id, language, referrer_id)
+            return True
+        else:
+            return False
+    except Exception as e:
+        return "error when adding a user:" + str(e)
+
+
+async def tg_id_cheker(tg_id: int) -> bool:
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    try:
+        res = await db.check_user_exists(tg_id)
+        return res
+    except Exception as e:
+        return "error when adding a user:" + str(e)
+
+
+async def get_user_lang(tg_id: int) -> str:
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    try:
+        lang = await db.get_user_lang(tg_id)
+        return lang
+    except Exception as e:
+        return "error when getting tg_id:" + str(e)
+
+async def get_id_by_tgid(tg_ig: int) -> int:
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    try:
+        id = await db.get_id_by_tg(tg_ig)
+        return id
+    except Exception as e:
+        return "error when getting id:" + str(e)
+
+async def save_image(img_filename,img_base64):
+    try:
+        load_dotenv()
+        filename = img_filename
+        file_path = os.path.join(os.getenv("DIRECTORY_PFPS"), filename)
+
+        base64_str = img_base64
+        if base64_str.startswith('data:image/png;base64,'):
+            base64_str = base64_str[len('data:image/png;base64,'):]
+        elif base64_str.startswith('data:image/jpeg;base64,'):
+            base64_str = base64_str[len('data:image/jpeg;base64,'):]
+
+        image_data = base64.b64decode(base64_str)
+
+        with open(file_path, 'wb') as file:
+            file.write(image_data)
+
+        return {"message": "Image saved successfully", "filename": filename}
+    except Exception as e:
+        return "error when getting id:" + str(e)
+
+async def check_file_exists(img_filename):
+    load_dotenv()
+    result = os.path.exists(os.getenv("DIRECTORY_PFPS")+"\\"+ img_filename)
+    print("CHECKFILE EXIST",result, os.getenv("DIRECTORY_PFPS")+"/"+ img_filename)
+    return result
+

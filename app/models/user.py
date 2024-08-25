@@ -16,7 +16,7 @@ class Work(BaseModel):
 
 
 class NFT(BaseModel):
-    name: str
+    name: str | None
     image_url: str
     opensea_url: str | None
 
@@ -114,6 +114,9 @@ class NFTgetALL(BaseModel):
 class NFTgetALLResponse(BaseModel):
     nfts: list[NFT]
 
+class NumPointsSwipesResponse(BaseModel):
+    points: int
+    swipes:int
 
 class AddNFTS(BaseModel):
     address: str
@@ -136,6 +139,11 @@ class nextUser(BaseModel):
 
 class nextUserResponse(BaseModel):
     nextUserId: int | None
+
+class changeFilter(BaseModel):
+    score: list[int]
+    passions: list[str]
+    achievements: list[str]
 
 
 class getAllMatches(BaseModel):

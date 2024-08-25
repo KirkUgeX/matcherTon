@@ -1,17 +1,21 @@
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, BackgroundTasks
+from fastapi.responses import FileResponse
 from app.models import user as user_model
 from app.models.token import TokenData
 from app.models.chat import ChatCreation, GetAllMessages
 from app.core.limiter import limiter
 from app.utils import uf
 from app.utils import recommendation_sys as rs
+from app.utils import recommendation_sys_wth_filter as rs_filter
 from app.utils.html import escape_html
 from app.api.endpoints.auth import get_current_user, get_current_holder
 from app.utils.score import scoreBackground
 import app.utils.nft_info_func  as nf
 from app.messenger.msg_functions import create_chat, get_all_messages, get_all_chats
 from app.bot import tg_avatars
-
+import os
+import json
+from dotenv import load_dotenv
 router = APIRouter()
 
 
@@ -179,15 +183,15 @@ async def requestMute(request: Request, user: user_model.mute = Body(...),
 async def reaction_like_dislike(request: Request, user: user_model.reactionLikeDislike = Body(...),
                                 current_user: TokenData = Depends(
                                     get_current_holder)) -> user_model.reactionLikeDislikeResponse:
-    try:
+
         result = await uf.reaction_like_dislike(escape_html(user.user_id), escape_html(user.target_id),
                                                 escape_html(user.reaction_type))
         if isinstance(result, str):
             if "Error" in result:
-                raise HTTPException(status_code=500, detail=f"{result}")
+                print(result)
+        print("ERROR result", result)
         return {"resultMatchOrNoMatch": result}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in requestReactionLikeDislike :{str(e)}")
+
 
 
 @router.post("/requestNextUser")
@@ -201,12 +205,36 @@ async def nextUsr(request: Request, user: user_model.nextUser = Body(...),
     print(result)
     return {"nextUserId": result}
 
+@router.post("/requestNextUserWithFilter")
+@limiter.limit("1000/minute")
+async def nextUser(request: Request, user: user_model.nextUser = Body(...),
+                  current_user: TokenData = Depends(get_current_holder)) -> user_model.nextUserResponse:
+    result = await rs_filter.rec_prof(user.user_id)
+    if isinstance(result, str):
+        if "Error" in result:
+            raise HTTPException(status_code=500, detail=f"{result}")
+    print(user,result)
+    return {"nextUserId": result}
+@router.post("/requestChangeFilter")
+@limiter.limit("1000/minute")
+async def changeFilter(request: Request, user: user_model.changeFilter = Body(...),
+                  current_user: TokenData = Depends(get_current_holder)):
+    filter_settings={"score": user.score,
+                     "passions": user.passions,
+                     "achievements": user.achievements}
 
+
+    result = await rs_filter.filter_change(current_user.user_id,filter_settings)
+    if isinstance(result, str):
+        if "Error" in result:
+            raise HTTPException(status_code=500, detail=f"{result}")
+    print(result)
+    return 200
 @router.get("/getAllMatches")
 @limiter.limit("1000/minute")
 async def get_AllMatches(request: Request,
                          current_user: TokenData = Depends(get_current_holder)) -> user_model.getAllMatchesResponse:
-    try:
+    """try:
         user_id = current_user.user_id
         mtchs = await uf.all_matches(user_id)
         if isinstance(mtchs, str):
@@ -216,7 +244,14 @@ async def get_AllMatches(request: Request,
         return mtchs
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=500, detail=f"{e}")
+        raise HTTPException(status_code=500, detail=f"{e}")"""
+    user_id = current_user.user_id
+    mtchs = await uf.all_matches(user_id)
+    if isinstance(mtchs, str):
+        if "Error" in mtchs:
+            raise HTTPException(status_code=500, detail=f" {mtchs}")
+
+    return mtchs
 
 
 @router.post("/deleteMatch")
@@ -293,6 +328,25 @@ async def get_all_nfts(request: Request, user: user_model.NFTgetALL = Body(...),
         return {"nfts": nfts_data_all}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error when receiving nft from Opensea's api :{str(e)}")
+@router.get("/get_image/{filename}")
+async def get_image(filename: str):
+    load_dotenv()
+    file_path = os.path.join(os.getenv("DIRECTORY_PFPS"), filename)
+    if os.path.exists(file_path):
+        return FileResponse(file_path, media_type='image/png', filename=filename)
+    else:
+        raise HTTPException(status_code=404, detail="File not found")
+
+
+@router.get("/requestNumPointsSwipes")
+@limiter.limit("1000/minute")
+async def get_points_swipes_info(request: Request,
+                       current_user: TokenData = Depends(get_current_user)) -> user_model.NumPointsSwipesResponse:
+
+    num = await uf.num_points(escape_html(current_user.user_id))
+    swipes = await uf.num_swipes(escape_html(current_user.user_id))
+    print("SWIPES_POINTS",swipes,num)
+    return {"points": num,"swipes":swipes}
 
 """@router.exception_handler(RateLimitExceeded)
 async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):

@@ -1,6 +1,7 @@
 import asyncio
 import json
 from app.core.security import decrypter
+from app.utils import uf
 from fastapi import HTTPException
 from dotenv import load_dotenv
 from app.databases.messenger_db import MessenggerDB
@@ -55,6 +56,9 @@ async def create_chat(chat_name, chat_users):
     try:
         chat_name = chat_name
         chat_users = chat_users
+        if len(chat_users) == 1:
+            return {"status": "failed", "message": "Cannot create a chat with only one user"}
+
         chat_id = await db.create_chat(chat_name=chat_name, chat_users=chat_users)
         return chat_id
 
@@ -161,12 +165,16 @@ async def get_all_chats(user_id):
                 return profile_info
         if profile_info==None:
             continue
-        print("USR:",oponent_id)
-        print("chat:", chat)
-        print("profile_info:",profile_info)
+        # print("USR:",oponent_id)
+        # print("chat:", chat)
+        # print("profile_info:",profile_info)
         nicname = profile_info[1]
         nfts_id = profile_info[7]
-
+        id=str(profile_info[0])
+        work = json.loads(profile_info[6])
+        position=work["position"]
+        company=work['company']
+        description= f"{position} | {company} "
         nfts_cor = await db_k.nfts_get(nfts_id)
 
         if nfts_cor['nftsjson'] is not None and isinstance(nfts_cor['nftsjson'], list):
@@ -175,7 +183,12 @@ async def get_all_chats(user_id):
                 if "Error" in nfts:
                     return nfts
         else:
-            nfts = []
+            if await uf.check_file_exists(id+".png"):
+                nfts = {"image_url":f"https://matcher.fun/get_image/{id}.png"}
+            else:
+                print(await uf.save_image(f"{id}.png",profile_info[15]))
+                nfts = {"image_url":f"https://matcher.fun/get_image/{id}.png"}
+
         if isinstance(nfts, str):
             if "Error" in nfts:
                 return nfts
@@ -183,7 +196,9 @@ async def get_all_chats(user_id):
         chat_info = {
             "id": chat["id"],
             "chat_name": nicname,
-            "user_nft": nfts
+            "user_nft": nfts,
+            "description":description
         }
         new_chat_list.append(chat_info)
+    print("new_chat_list",new_chat_list)
     return new_chat_list

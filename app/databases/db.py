@@ -2,7 +2,8 @@ import json
 import uuid
 import asyncpg
 import os
-
+import pandas as pd
+import json
 
 class Database:
     def __init__(self):
@@ -197,7 +198,53 @@ class Database:
         except asyncpg.PostgresError as e:
             print("Error updating recommendation system entry's user ID:", e)
             return "Error DB updating recommendation system entry's user ID:" + str(e)
+    async def recomendSys_change_filter_data(self, userID,filter_data):
+        try:
+            await self.conn.execute("""
+                UPDATE recomendSys
+                SET filter = $1
+                WHERE userid = $2 
+            """, filter_data,userID)
 
+            return 200
+        except asyncpg.PostgresError as e:
+            print("Error updating recommendation system entry's user ID:", e)
+            return "Error DB updating recommendation system entry's user ID:" + str(e)
+    async def get_all_users_info(self):
+        try:
+            ids = await self.conn.fetch("""
+                SELECT id, tagsSphere FROM profiles
+            """)
+            id_list = []
+            for id in ids:
+                id_list.append(
+                    {
+                        "id": id[0],
+                        "tagsSphere": id[1]
+                    }
+
+                )
+            print(id_list)
+            recsys = await self.conn.fetch("""
+                            SELECT userid, achievements, score FROM recomendsys
+                        """)
+            recsys_data=[]
+            for id in recsys:
+                print(id)
+                item_id = id[0]
+                item_1 = json.loads(id[1]) if id[1] is not None else None
+                item_2 = id[2]
+                print("it",item_2)
+                recsys_data.append({"userid":item_id,"achievements": item_1, "score": item_2})
+
+            df1 = pd.DataFrame(id_list)
+            df2 = pd.DataFrame(recsys_data)
+            merged_df = pd.merge(df1, df2, left_on='id', right_on='userid')
+            print(merged_df)
+            return merged_df.to_dict(orient='records')
+        except asyncpg.PostgresError as e:
+            print("Error fetching profile IDs:", e)
+            return f"Error DB fetching profile IDs: {e}"
     # NFTS TABLE
     async def nfts_make(self, userID, nftJSON):
         try:
@@ -381,7 +428,61 @@ class Database:
             print("Error retrieving user UUID:", e)
             return f"Error retrieving user UUID: {e}"
 
+    async def check_tg_id_exists(self, tg_id: int) -> bool:
+        try:
+            result = await self.conn.fetchval("""
+                SELECT EXISTS(
+                    SELECT 1 FROM tg_bot WHERE tg_id = $1
+                )
+            """, tg_id)
+            return result
+        except asyncpg.PostgresError as e:
+            print("Error checking tg_id:", e)
+            return False
 
+    async def add_bot_user(self, tg_id: int, language: str, referrer_id):
+        try:
+            await self.conn.execute("""
+                INSERT INTO tg_bot (tg_id, language, referrer_id)
+                VALUES ($1, $2, $3)
+                ON CONFLICT (tg_id) DO NOTHING
+            """, tg_id, language, referrer_id)
+            return 200
+        except asyncpg.PostgresError as e:
+            print("Error adding user:", e)
+            return f"Error DB adding user: {e}"
+
+    async def check_user_exists(self, tg_userid: int) -> bool:
+        try:
+            result = await self.conn.fetchval("""
+                   SELECT EXISTS(SELECT 1 FROM profiles WHERE tg_userid = $1)
+               """, tg_userid)
+            return result
+        except asyncpg.PostgresError as e:
+            print("Error checking user:", e)
+            return False
+
+    async def get_user_lang(self, tg_id: int) -> str:
+        try:
+            user_lang = await self.conn.fetchval("""
+                SELECT language FROM tg_bot WHERE tg_id = $
+            """, tg_id)
+            return user_lang
+        except asyncpg.PostgresError as e:
+            print("Error getting user lang:", e)
+            return f"Error getting user lang: {e}"
+
+    async def get_id_by_tg(self, tg_userid):
+        try:
+            key_id = await self.conn.fetchval("""
+                SELECT id FROM profiles WHERE tg_userid = $1
+            """, tg_userid)
+
+            return key_id
+
+        except asyncpg.PostgresError as e:
+            print("Error retrieving user ID:", e)
+            return f"Error retrieving user ID: {e}"
 
 class DatabaseWL:
     def __init__(self):

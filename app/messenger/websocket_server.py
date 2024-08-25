@@ -98,8 +98,10 @@ async def chat_server(websocket: WebSocketServerProtocol, path: str):
                         print("NO")
                         tg_id_reciver = await uf.get_telegram_id(chat_users_id)
                         tg_id_sender = await uf.get_telegram_id(message_data["from_user"])
-                        message = messages.new_message.replace("{username}", f"{tg_id_sender['profilenickname']}")
-                        await notices.send_notice(user_id=tg_id_reciver['tg_id'], message=message)
+                        nickname = tg_id_sender['profilenickname']
+                        await notices.send_notice(user_id=tg_id_reciver['tg_id'],
+                                                  message_type="new_msg",
+                                                  nickname=nickname)
                         await connections[user_uuid].send(json.dumps(new_message).encode('utf-8'))
 
                     chat_users = await db_m.get_chat_users(chat_id=message_data["chat_id"])
@@ -136,8 +138,8 @@ async def chat_server(websocket: WebSocketServerProtocol, path: str):
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain(certfile="fullchain.pem", keyfile="privkey.pem")
 load_dotenv()
-wss_host = "185.192.247.248" # os.getenv("WSS_SER")
-wss_port = 8765 # os.getenv("WSS_PORT")
+wss_host = os.getenv("WSS_SER")
+wss_port = os.getenv("WSS_PORT")
 
 start_server = websockets.serve(chat_server, wss_host, wss_port, ssl=ssl_context)
 print(f"Websocket server started and listening on wss://{wss_host}:{wss_port}")

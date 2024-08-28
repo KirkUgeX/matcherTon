@@ -410,7 +410,26 @@ class Database:
         except asyncpg.PostgresError as e:
             print("Error wallet user UUID:", e)
             return f"Error wallet user UUID: {e}"
-
+    async def get_user_uuid_by_tguserid(self, tg_userid):
+        try:
+            user_uuid = await self.conn.fetchval("""
+                SELECT user_uuid FROM profiles WHERE tg_userid = $1
+            """, tg_userid)
+            print(user_uuid)
+            return str(user_uuid) if user_uuid is not None else None
+        except asyncpg.PostgresError as e:
+            print("Error wallet user UUID:", e)
+            return f"Error wallet user UUID: {e}"
+    async def get_user_id_by_tguserid(self, tg_userid):
+        try:
+            id = await self.conn.fetchval("""
+                SELECT id FROM profiles WHERE tg_userid = $1
+            """, tg_userid)
+            print(id)
+            return str(id) if id is not None else None
+        except asyncpg.PostgresError as e:
+            print("Error wallet user UUID:", e)
+            return f"Error wallet user UUID: {e}"
     async def get_tg_by_id(self, user_id):
         try:
             row = await self.conn.fetchrow("""

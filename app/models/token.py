@@ -25,3 +25,8 @@ class Account(BaseModel):
 class OAuthData(BaseModel):
     account: Account
     proof: Proof
+
+class OAuthDataTG(BaseModel):
+    hash: str
+    init_data: str
+    user_tg_id: int

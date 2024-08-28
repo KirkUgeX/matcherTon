@@ -351,7 +351,27 @@ async def uuidFromWallet(wallet):
     print(type(res))
     return res
 
+async def idFromTG(tg):
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    res = await db.get_user_id_by_tguserid(tg)
+    return res
 
+
+async def uuidFromTG(tg):
+    try:
+        load_dotenv()
+        db = Database()
+        await db.connect()
+    except psycopg2.Error as e:
+        return "Connection Error occurred:" + str(e)
+    res = await db.get_user_uuid_by_tguserid(tg)
+    print(type(res))
+    return res
 async def makeJsonMeta(nickname, img, wallet):
     metadata = {
         "nameNFT": "Matcher Pass",

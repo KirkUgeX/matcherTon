@@ -1,16 +1,17 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from app.core.security import ProofBearer
-from app.models.token import OAuthData
+from app.models.token import OAuthData,OAuthDataTG
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm, APIKeyHeader
 from fastapi.responses import JSONResponse
 from jose import jwt
 from typing import Optional
+from dotenv import load_dotenv
 
 from app.core.config import settings
 from app.core.security import create_access_token
 from app.models.token import TokenData
-from app.utils.auth import check_proof, generate_payload
+from app.utils.auth import check_proof, generate_payload, validate
 from app.utils.auth import verify_signature, check_matcher_nft_wallet
 from app.utils.uf import idFromWallet, uuidFromWallet
 import app.utils.uf as uf
@@ -64,6 +65,33 @@ async def generate_token(form_data: OAuthData):
     print({"sub": address, "user_id": user_id, "uuid": uuid_wall})
     return {"access_token": access_token, "token_type": "bearer"}
 
+@router.post("/tokentg")
+async def generate_token_tg(form_data: OAuthDataTG):
+    load_dotenv()
+    hash =form_data.hash
+    init_data=form_data.init_data
+    user_tg_id=form_data.user_tg_id
+
+    result = await validate(hash,init_data,os.getenv("BOT_TOKEN"))
+
+    if not result:
+        raise HTTPException(
+            status_code=401,
+            detail="Sign validation failed",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user_id = uuid_wall = None
+    if await uf.idFromTG(user_tg_id) != None:
+        user_id = await uf.idFromTG(user_tg_id)
+        uuid_wall = await uf.idFromTG(user_tg_id)
+        #print(uuid_wall)
+
+    access_token_expires = timedelta(minutes=20)
+    access_token = await create_access_token(
+        data={"sub": user_tg_id, "user_id": user_id, "uuid": uuid_wall}, expires_delta=access_token_expires
+    )
+    print({"sub": user_tg_id, "user_id": user_id, "uuid": uuid_wall})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/generate-payload")
 async def generate_payload_for_auth():
